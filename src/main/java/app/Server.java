@@ -92,6 +92,17 @@ public class Server {
 
         }
 
+
+        private void sendListOfUsers(Connection connection, String userName) throws IOException {
+
+            for (Map.Entry<String, Connection> entry : connectionMap.entrySet()) {
+                if (!entry.getKey().equalsIgnoreCase(userName)) {
+                    entry.getValue().send(new Message(MessageType.USER_ADDED, userName));
+                }
+            }
+
+
+        }
         @Override
         public void run() {
             logger.log(Level.INFO, "run() socket {0}", socket.getPort());
