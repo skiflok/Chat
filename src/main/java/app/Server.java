@@ -53,21 +53,67 @@ public class Server {
         }
 
         private String serverHandshake(Connection connection) throws IOException, ClassNotFoundException {
+            while (true) {
 
-            connection.send(new Message(MessageType.NAME_REQUEST));
+                connection.send(new Message(MessageType.NAME_REQUEST));
 
-            Message message = connection.receive();
+                Message message = connection.receive();
 
-            connectionMap.put(message.getMessage(), connection);
+                if (message.getMessageType() != MessageType.USER_NAME) {
+                    logger.log(Level.SEVERE, "Получено сообщение от " +
+                            socket.getRemoteSocketAddress() +
+                            ". Тип сообщения не соответствует протоколу.");
+                    ConsoleHelper.writeMessage("Получено сообщение от " +
+                            socket.getRemoteSocketAddress() +
+                            ". Тип сообщения не соответствует протоколу.");
+                    continue;
+                }
 
-            return "";
+                String userName = message.getMessage();
 
-            //TODO
+                if (userName.isEmpty()) {
+                    logger.log(Level.SEVERE, "Попытка подключения к серверу с пустым именем от " + socket.getRemoteSocketAddress());
+                    ConsoleHelper.writeMessage("Попытка подключения к серверу с пустым именем от " + socket.getRemoteSocketAddress());
+                    continue;
+                }
+
+                if (connectionMap.containsKey(userName)) {
+                    logger.log(Level.SEVERE, "Попытка подключения к серверу с уже используемым именем от " + socket.getRemoteSocketAddress());
+                    ConsoleHelper.writeMessage("Попытка подключения к серверу с уже используемым именем от " + socket.getRemoteSocketAddress());
+                    continue;
+                }
+
+                connectionMap.put(message.getMessage(), connection);
+
+                connection.send(new Message(MessageType.NAME_ACCEPTED));
+
+                return userName;
+            }
+
         }
 
+        @Override
+        public void run() {
+            logger.log(Level.INFO, "run() socket {0}", socket.getPort());
+            Connection connection;
+            try {
+                connection = new Connection(socket);
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
 
-
-
+            Message message;
+            while (!isInterrupted()) {
+                try {
+                    message = connection.receive();
+                    ConsoleHelper.writeMessage(message.getMessage());
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
 }
