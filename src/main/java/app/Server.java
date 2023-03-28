@@ -37,6 +37,7 @@ public class Server {
 
     /**
      * Рассылает сообщение всем участникам чата
+     *
      * @param message
      */
     public static void sendBroadcastMessage(Message message) {
@@ -55,7 +56,7 @@ public class Server {
      * Обработчик сообщений
      */
     private static class Handler extends Thread {
-        private Socket socket;
+        private final Socket socket;
 
         public Handler(Socket socket) {
             this.socket = socket;
@@ -65,6 +66,7 @@ public class Server {
          * Авторизация пользователя по имени, отправляет запросы,
          * вносит в базу участников чата для рассылки
          * авторизация по уникальному имени пользователя
+         *
          * @param connection соединение
          * @return имя пользователя
          * @throws IOException
@@ -111,11 +113,11 @@ public class Server {
         }
 
 
-        private void sendListOfUsers(Connection connection, String userName) throws IOException {
+        private void notifyUsers(Connection connection, String userName) throws IOException {
 
             for (Map.Entry<String, Connection> entry : connectionMap.entrySet()) {
                 if (!entry.getKey().equalsIgnoreCase(userName)) {
-                    entry.getValue().send(new Message(MessageType.USER_ADDED, userName));
+                    connection.send(new Message(MessageType.USER_ADDED, userName));
                 }
             }
 
@@ -154,25 +156,35 @@ public class Server {
 
         @Override
         public void run() {
-            logger.log(Level.INFO, "run() socket {0}", socket.getPort());
-            Connection connection;
-            try {
-                connection = new Connection(socket);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+
+            logger.log(Level.INFO, "run() socket {0}", socket.getRemoteSocketAddress());
+            ConsoleHelper.writeMessage("Установлено новое соединение с " + socket.getRemoteSocketAddress());
+
+            String userName = null;
+
+            try (Connection connection = new Connection(socket)) {
+
+                userName = serverHandshake(connection);
+
+                sendBroadcastMessage(new Message(MessageType.USER_ADDED, userName));
+
+                notifyUsers(connection, userName);
+
+                serverMainLoop(connection, userName);
+
+            } catch (IOException | ClassNotFoundException e) {
+                logger.log(Level.SEVERE, "Ошибка при обмене данными с " + socket.getRemoteSocketAddress());
+                ConsoleHelper.writeMessage("Ошибка при обмене данными с " + socket.getRemoteSocketAddress());
             }
 
-            Message message;
-            while (!isInterrupted()) {
-                try {
-                    message = connection.receive();
-                    ConsoleHelper.writeMessage(message.getMessage());
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException(e);
-                }
+            if (userName != null) {
+                connectionMap.remove(userName);
+                logger.log(Level.INFO, "Пользователь {0} удален", userName);
+                sendBroadcastMessage(new Message(MessageType.USER_REMOVED, userName));
             }
+
+            logger.log(Level.INFO, "Соединение с " + socket.getRemoteSocketAddress() + " закрыто.");
+            ConsoleHelper.writeMessage("Соединение с " + socket.getRemoteSocketAddress() + " закрыто.");
         }
     }
 
