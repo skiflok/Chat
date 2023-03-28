@@ -1,5 +1,7 @@
 package app;
 
+import com.sun.javafx.binding.StringFormatter;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -33,6 +35,10 @@ public class Server {
 
     }
 
+    /**
+     * Рассылает сообщение всем участникам чата
+     * @param message
+     */
     public static void sendBroadcastMessage(Message message) {
         for (Connection connection : connectionMap.values()) {
             try {
@@ -45,6 +51,9 @@ public class Server {
         }
     }
 
+    /**
+     * Обработчик сообщений
+     */
     private static class Handler extends Thread {
         private Socket socket;
 
@@ -52,6 +61,15 @@ public class Server {
             this.socket = socket;
         }
 
+        /**
+         * Авторизация пользователя по имени, отправляет запросы,
+         * вносит в базу участников чата для рассылки
+         * авторизация по уникальному имени пользователя
+         * @param connection соединение
+         * @return имя пользователя
+         * @throws IOException
+         * @throws ClassNotFoundException
+         */
         private String serverHandshake(Connection connection) throws IOException, ClassNotFoundException {
             while (true) {
 
@@ -103,6 +121,37 @@ public class Server {
 
 
         }
+
+        /**
+         * главный цикл обработки сообщений сервером,
+         * принимает сообщения от клиента и рассылает всем клиентам
+         *
+         * @param connection Соединение
+         * @param userName   имя отправителя
+         * @throws IOException
+         * @throws ClassNotFoundException
+         */
+        private void serverMainLoop(Connection connection, String userName) throws IOException, ClassNotFoundException {
+
+            while (true) {
+
+                Message message = connection.receive();
+
+                if (message.getMessageType() == MessageType.TEXT) {
+                    String textMessage = String.format("%s: %s", userName, message.getMessage());
+                    sendBroadcastMessage(new Message(MessageType.TEXT, textMessage));
+                } else {
+                    logger.log(Level.SEVERE, "Получено сообщение от " +
+                            socket.getRemoteSocketAddress() +
+                            ". Тип сообщения не соответствует протоколу.");
+                    ConsoleHelper.writeMessage("Получено сообщение от " +
+                            socket.getRemoteSocketAddress() +
+                            ". Тип сообщения не соответствует протоколу.");
+                }
+            }
+        }
+
+
         @Override
         public void run() {
             logger.log(Level.INFO, "run() socket {0}", socket.getPort());
