@@ -84,6 +84,21 @@ public class Client {
 
     public class SocketThread extends Thread {
 
+
+        @Override
+        public void run() {
+            try {
+                // Создаем соединение с сервером
+                connection = new Connection(new Socket(getServerAddress(), getServerPort()));
+
+                clientHandshake();
+                clientMainLoop();
+
+            } catch (IOException | ClassNotFoundException e) {
+                notifyConnectionStatusChanged(false);
+            }
+        }
+
         void processIncomingMessage(String message){
             ConsoleHelper.writeMessage(message);
         }
