@@ -79,12 +79,71 @@ public class Client {
             if (shouldSendTextFromConsole())
                 sendTextMessage(text);
         }
-
-
     }
 
 
     public class SocketThread extends Thread {
+
+        void processIncomingMessage(String message){
+            ConsoleHelper.writeMessage(message);
+        }
+
+        void informAboutAddingNewUser(String userName){
+            ConsoleHelper.writeMessage("Участник '" + userName + "' присоединился к чату.");
+        }
+
+        void informAboutDeletingNewUser(String userName){
+            ConsoleHelper.writeMessage("Участник '" + userName + "' покинул чат.");
+        }
+
+        void notifyConnectionStatusChanged(boolean clientConnected){
+            Client.this.clientConnected = clientConnected;
+            synchronized (Client.this) {
+                Client.this.notify();
+            }
+        }
+
+
+        protected void clientHandshake() throws IOException, ClassNotFoundException {
+            while (true) {
+                Message message = connection.receive();
+
+                if (message.getMessageType() == MessageType.NAME_REQUEST) { // Сервер запросил имя пользователя
+                    // Запрашиваем ввод имени с консоли
+                    String name = getUserName();
+                    // Отправляем имя на сервер
+                    connection.send(new Message(MessageType.USER_NAME, name));
+
+                } else if (message.getMessageType() == MessageType.NAME_ACCEPTED) { // Сервер принял имя пользователя
+                    // Сообщаем главному потоку, что он может продолжить работу
+                    notifyConnectionStatusChanged(true);
+                    return;
+
+                } else {
+                    logger.log(Level.SEVERE, "Unexpected MessageType.");
+                    throw new IOException("Unexpected MessageType");
+                }
+            }
+        }
+
+        protected void clientMainLoop() throws IOException, ClassNotFoundException {
+
+            // Цикл обработки сообщений сервера
+            while (true) {
+                Message message = connection.receive();
+
+                if (message.getMessageType() == MessageType.TEXT) { // Сервер прислал сообщение с текстом
+                    processIncomingMessage(message.getMessage());
+                } else if (MessageType.USER_ADDED == message.getMessageType()) {
+                    informAboutAddingNewUser(message.getMessage());
+                } else if (MessageType.USER_REMOVED == message.getMessageType()) {
+                    informAboutDeletingNewUser(message.getMessage());
+                } else {
+                    logger.log(Level.SEVERE, "Unexpected MessageType.");
+                    throw new IOException("Unexpected MessageType");
+                }
+            }
+        }
 
 
     }
