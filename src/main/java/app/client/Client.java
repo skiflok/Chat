@@ -32,7 +32,7 @@ public class Client {
         return ConsoleHelper.readString();
     }
 
-    protected boolean shouldSentTextFromConsole() {
+    protected boolean shouldSendTextFromConsole() {
         return true;
     }
 
@@ -54,7 +54,6 @@ public class Client {
     public void run() {
         SocketThread socketThread = getSocketThread();
         socketThread.setDaemon(true);
-
         socketThread.start();
 
         try {
@@ -62,8 +61,23 @@ public class Client {
                 wait();
             }
         } catch (InterruptedException e) {
+            logger.log(Level.SEVERE, "Произошла ошибка во время работы клиента.");
             ConsoleHelper.writeMessage("Произошла ошибка во время работы клиента.");
             return;
+        }
+
+        if (clientConnected)
+            ConsoleHelper.writeMessage("Соединение установлено. Для выхода наберите команду 'exit'.");
+        else
+            ConsoleHelper.writeMessage("Произошла ошибка во время работы клиента.");
+
+        while (clientConnected) {
+            String text = ConsoleHelper.readString();
+            if (text.equalsIgnoreCase("exit"))
+                break;
+
+            if (shouldSendTextFromConsole())
+                sendTextMessage(text);
         }
 
 
@@ -77,14 +91,7 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
         Client client = new Client();
-//        client.run();
-        Socket socket = new Socket("127.0.0.1", 8081);
-        client.connection = new Connection(socket);
-        String message;
-        while (true) {
-            message = ConsoleHelper.readString();
-            client.connection.send(new Message(MessageType.TEXT, message));
-        }
+        client.run();
 
     }
 
