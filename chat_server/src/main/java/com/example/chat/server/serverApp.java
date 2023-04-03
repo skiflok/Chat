@@ -26,7 +26,7 @@ public class serverApp {
                     .childHandler(new ChannelInitializer<SocketChannel>() { // обработчик подключения
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-
+                            socketChannel.pipeline().addLast(new ServerHandler());
                         }
                     });
 

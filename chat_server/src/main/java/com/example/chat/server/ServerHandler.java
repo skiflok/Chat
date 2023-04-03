@@ -14,7 +14,7 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf byteBuf = (ByteBuf) msg; // поток байтов
         while (byteBuf.readableBytes() > 0) {
-            System.out.println((char) byteBuf.readByte());
+            System.out.print((char) byteBuf.readByte());
         }
         byteBuf.release(); // очистка буфера
     }
