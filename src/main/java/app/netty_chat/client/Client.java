@@ -34,8 +34,6 @@ public class Client {
 
     public void run () {
 
-
-
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
         try {
@@ -46,7 +44,7 @@ public class Client {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-//                    ch.pipeline().addLast(new TimeClientHandler());
+                    ch.pipeline().addLast(new ClientHandler());
                 }
             });
 

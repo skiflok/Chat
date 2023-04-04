@@ -1,8 +1,11 @@
 package app.netty_chat;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.util.CharsetUtil;
 import io.netty.util.ReferenceCountUtil;
 
 import java.io.IOException;
@@ -12,7 +15,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
+
 public class ServerHandler extends ChannelInboundHandlerAdapter {
+    Server server;
 
     private static final Logger logger = Logger.getLogger(ServerHandler.class.getName());
 
@@ -24,14 +29,22 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         ByteBuf in = (ByteBuf) msg;
-            try {
-                while (in.isReadable()) { // (1)
-                    System.out.print((char) in.readByte());
-                    System.out.flush();
-                }
-            } finally {
-                ReferenceCountUtil.release(msg);
+
+        try {
+            String str = in.toString(CharsetUtil.UTF_8);
+//                while (in.isReadable()) { // (1)
+//                    System.out.print((char) in.readByte());
+//                    System.out.flush();
+//                }
+            System.out.print(str);
+
+            for (SocketChannel channel : Server.connection) {
+                ByteBuf out = Unpooled.wrappedBuffer(str.getBytes());
+                channel.writeAndFlush(out);
             }
+        } finally {
+            ReferenceCountUtil.release(msg);
+        }
     }
 
     @Override

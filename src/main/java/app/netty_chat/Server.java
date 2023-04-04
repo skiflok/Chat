@@ -12,6 +12,8 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
@@ -23,7 +25,13 @@ public class Server {
 
 //    private static final Map<String, Connection> connectionMap = new ConcurrentHashMap<>();
 
-    private static final Map<String, Connection> connectionMap = new ConcurrentHashMap<>();
+//    private static final Map<SocketChannel, Connection> connectionMap = new ConcurrentHashMap<>();
+
+    protected static final List<SocketChannel> connection = new ArrayList<>();
+
+//    public static List<SocketChannel> getConnection() {
+//        return connection;
+//    }
 
     private final int PORT;
 
@@ -49,6 +57,7 @@ public class Server {
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(new ServerHandler());
+                            connection.add(socketChannel);
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)
@@ -97,22 +106,22 @@ public class Server {
 
     }
 
-    /**
-     * Рассылает сообщение всем участникам чата
-     *
-     * @param message
-     */
-    public static void sendBroadcastMessage(Message message) {
-        for (Connection connection : connectionMap.values()) {
-            try {
-                connection.send(message);
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Не смогли отправить сообщение {0}", e.getMessage());
-                logger.log(Level.SEVERE, "RemoteSocketAddress {0}", connection.getRemoteSocketAddress());
-                ConsoleHelper.writeMessage("Не смогли отправить сообщение " + connection.getRemoteSocketAddress());
-            }
-        }
-    }
+//    /**
+//     * Рассылает сообщение всем участникам чата
+//     *
+//     * @param message
+//     */
+//    public static void sendBroadcastMessage(Message message) {
+//        for (Connection connection : connectionMap.values()) {
+//            try {
+//                connection.send(message);
+//            } catch (IOException e) {
+//                logger.log(Level.SEVERE, "Не смогли отправить сообщение {0}", e.getMessage());
+//                logger.log(Level.SEVERE, "RemoteSocketAddress {0}", connection.getRemoteSocketAddress());
+//                ConsoleHelper.writeMessage("Не смогли отправить сообщение " + connection.getRemoteSocketAddress());
+//            }
+//        }
+//    }
 
 
 
