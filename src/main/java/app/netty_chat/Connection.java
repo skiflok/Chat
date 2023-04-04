@@ -1,4 +1,4 @@
-package app;
+package app.netty_chat;
 
 import java.io.Closeable;
 import java.io.IOException;
