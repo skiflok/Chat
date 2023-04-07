@@ -11,13 +11,11 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
+import java.io.InputStream;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -28,13 +26,19 @@ public class Server {
 //    private static final Map<String, Connection> connectionMap = new ConcurrentHashMap<>();
 
     private final int PORT;
+    private final String HOST;
 
     public int getPORT() {
         return PORT;
     }
 
-    public Server(int port) {
+    public String getHOST() {
+        return HOST;
+    }
+
+    public Server(int port, String host) {
         PORT = port;
+        HOST = host;
     }
 
     public void run() throws Exception {
@@ -56,8 +60,9 @@ public class Server {
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)
                     .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
-            ChannelFuture f = b.bind(PORT).sync(); // (7)
-
+            ChannelFuture f = b.bind(HOST, PORT).sync(); // (7)
+            logger.log(Level.INFO, "Сервер успешно запущен на хосте {0}", this.getHOST());
+            logger.log(Level.INFO, "Сервер успешно запущен на порту {0}", this.getPORT());
             f.channel().closeFuture().sync();
 
         } catch (Exception e) {
@@ -73,13 +78,23 @@ public class Server {
 
     public static void main(String[] args) {
 
-        ConsoleHelper.writeMessage("Введите порт сервера:");
+//        ConsoleHelper.writeMessage("Введите порт сервера:");
+
+        Properties properties = new Properties();
+        try (InputStream input = new FileInputStream("application.properties")) {
+            properties.load(input);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        int port = Integer.parseInt(properties.getProperty("server.port"));
+        String host = properties.getProperty("server.host");
 
         try {
-//            Server server = new Server(ConsoleHelper.readInt());
-            Server server = new Server(8080);
+            Server server = new Server(port, host);
             server.run();
-            logger.log(Level.INFO, "Сервер успешно запущен на порту  {0}", server.getPORT());
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Произошла ошибка при запуске или работе сервера {0}", e.getMessage());
             throw new RuntimeException(e);

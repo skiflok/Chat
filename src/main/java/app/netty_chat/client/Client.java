@@ -16,10 +16,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -230,18 +229,17 @@ public class Client {
 
     public static void main(String[] args) throws IOException {
 
-        ConsoleHelper.writeMessage("Введите адрес сервера");
+        Properties properties = new Properties();
+        try (InputStream input = new FileInputStream("application.properties")) {
+            properties.load(input);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
-//        String host = ConsoleHelper.readString();
-
-
-        ConsoleHelper.writeMessage("Введите порт");
-
-//        int port = ConsoleHelper.readInt();
-
-        String host = "127.0.0.1";
-        int port = 8080;
-
+        int port = Integer.parseInt(properties.getProperty("server.port"));
+        String host = properties.getProperty("server.host");
 
         Client client = new Client(host, port);
         client.run();
