@@ -61,7 +61,7 @@ public class Client {
                 if (line == null || "quit".equalsIgnoreCase(line)) {
                     break;
                 }
-                f.channel().writeAndFlush(line + "\r\n");
+                f.channel().writeAndFlush(line + "\r");
             }
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();

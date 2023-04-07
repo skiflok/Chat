@@ -52,9 +52,9 @@ public class Server {
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
                             socketChannel.pipeline().addLast(new StringDecoder(), new StringEncoder(), new ServerHandler());
                         }
-                    });
-//                    .option(ChannelOption.SO_BACKLOG, 128)          // (5)
-//                    .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
+                    })
+                    .option(ChannelOption.SO_BACKLOG, 128)          // (5)
+                    .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
             ChannelFuture f = b.bind(PORT).sync(); // (7)
 

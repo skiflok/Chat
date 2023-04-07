@@ -1,91 +1,57 @@
 package app.netty_chat;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.channel.SimpleChannelInboundHandler;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.util.CharsetUtil;
-import io.netty.util.ReferenceCountUtil;
 
-import java.io.IOException;
-import java.net.Socket;
+import io.netty.channel.SimpleChannelInboundHandler;
+
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
-
 public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
-    private final List<Channel> channels = new ArrayList<>();
+    private static final List<Channel> channels = new ArrayList<>();
 
-    private static final Logger logger = Logger.getLogger(ServerHandler.class.getName());
+    private final Logger logger = Logger.getLogger(ServerHandler.class.getName());
 
-        @Override
+    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.log(Level.INFO, "пользователь подключился {0}", ctx.name());
+        logger.log(Level.INFO, "пользователь подключился {0}", ctx.channel().remoteAddress());
         // Notify clients when someone disconnects.
-        ctx.writeAndFlush("[SERVER] - " + ctx.channel().remoteAddress() + " has join the chat!");
         channels.add(ctx.channel());
-        System.out.println(channels);
+        ctx.writeAndFlush("[SERVER] - " + ctx.channel().remoteAddress() + " has join the chat!\n");
+        for (Channel channel : channels) {
+            System.out.println(channel);
+        }
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // Notify clients when someone disconnects.
-        ctx.writeAndFlush("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!");
+        ctx.writeAndFlush("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!\n");
         channels.remove(ctx.channel());
     }
 
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
-
-        ctx.channel().writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg);
-//        System.out.println(msg);
-//        for (Channel channel : channels) {
-//            if (channel != ctx.channel()) {
-//                channel.writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg + "\n");
-//            } else {
-//                channel.writeAndFlush("[you] " + msg + "\n");
-//            }
-//        }
+        logger.log(Level.INFO, "Пользователь {0} прислал сообщение", ctx.channel().remoteAddress());
+//        ctx.channel().writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg);
+        System.out.println(msg);
+        for (Channel channel : channels) {
+            if (channel != ctx.channel()) {
+                channel.writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg + "\n");
+            } else {
+                channel.writeAndFlush("[you] " + msg + "\n");
+            }
+        }
     }
-//    @Override
-//    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//        ByteBuf in = (ByteBuf) msg;
-//
-//        try {
-//            String str = in.toString(CharsetUtil.UTF_8);
-//
-//            System.out.print(str);
-//            ByteBuf out_b;
-//            String out = "";
-//            for (Channel channel : channels) {
-//                if (channel != ctx.channel()) {
-//                    out = "[" + ctx.channel().remoteAddress() + "] " + str + "\n";
-//                    out_b = Unpooled.wrappedBuffer(out.getBytes());
-////                    channel.writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + str + "\n");
-//                } else {
-//                    out = "[you] " + str + "\n";
-//                    out_b = Unpooled.wrappedBuffer(out.getBytes());
-//                    channel.writeAndFlush("[you] " + str + "\n");
-//                }
-//            }
-//
-////            for (Channel channel : channels) {
-////                ByteBuf out = Unpooled.wrappedBuffer(str.getBytes());
-////                channel.writeAndFlush(out);
-////            }
-//        } finally {
-//            ReferenceCountUtil.release(msg);
-//        }
-//    }
+
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
