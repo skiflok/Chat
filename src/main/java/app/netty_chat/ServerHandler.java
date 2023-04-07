@@ -33,7 +33,9 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         // Notify clients when someone disconnects.
-        ctx.writeAndFlush("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!\n");
+        logger.log(Level.INFO, "пользователь отключился {0}", ctx.channel().remoteAddress());
+//        ctx.writeAndFlush("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!\n");
+        broadcastMessage("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!\n");
         channels.remove(ctx.channel());
     }
 
@@ -43,6 +45,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
         logger.log(Level.INFO, "Пользователь {0} прислал сообщение", ctx.channel().remoteAddress());
 //        ctx.channel().writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg);
         System.out.println(msg);
+//        broadcastMessage(msg);
         for (Channel channel : channels) {
             if (channel != ctx.channel()) {
                 channel.writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg + "\n");
@@ -56,7 +59,14 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.log(Level.SEVERE, "Ошибка  {0}", cause.getMessage());
+        channels.remove(ctx.channel());
         ctx.close();
+    }
+
+    private void broadcastMessage(String message) {
+        for (Channel channel : channels) {
+            channel.writeAndFlush(message + "\n");
+        }
     }
 
     //    /**
