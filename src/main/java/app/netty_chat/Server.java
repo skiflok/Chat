@@ -8,6 +8,8 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -25,14 +27,6 @@ public class Server {
 
 //    private static final Map<String, Connection> connectionMap = new ConcurrentHashMap<>();
 
-//    private static final Map<SocketChannel, Connection> connectionMap = new ConcurrentHashMap<>();
-
-    protected static final List<SocketChannel> connection = new ArrayList<>();
-
-//    public static List<SocketChannel> getConnection() {
-//        return connection;
-//    }
-
     private final int PORT;
 
     public int getPORT() {
@@ -43,7 +37,7 @@ public class Server {
         PORT = port;
     }
 
-    public void run () throws Exception {
+    public void run() throws Exception {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -56,12 +50,11 @@ public class Server {
 
                         @Override
                         protected void initChannel(SocketChannel socketChannel) throws Exception {
-                            socketChannel.pipeline().addLast(new ServerHandler());
-                            connection.add(socketChannel);
+                            socketChannel.pipeline().addLast(new StringDecoder(), new StringEncoder(), new ServerHandler());
                         }
-                    })
-                    .option(ChannelOption.SO_BACKLOG, 128)          // (5)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
+                    });
+//                    .option(ChannelOption.SO_BACKLOG, 128)          // (5)
+//                    .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
             ChannelFuture f = b.bind(PORT).sync(); // (7)
 
@@ -78,12 +71,13 @@ public class Server {
     }
 
 
-    public static void main(String[] args)  {
+    public static void main(String[] args) {
 
         ConsoleHelper.writeMessage("Введите порт сервера:");
 
         try {
-            Server server = new Server(ConsoleHelper.readInt());
+//            Server server = new Server(ConsoleHelper.readInt());
+            Server server = new Server(8080);
             server.run();
             logger.log(Level.INFO, "Сервер успешно запущен на порту  {0}", server.getPORT());
         } catch (Exception e) {
@@ -122,7 +116,6 @@ public class Server {
 //            }
 //        }
 //    }
-
 
 
 }

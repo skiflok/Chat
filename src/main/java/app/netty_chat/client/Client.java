@@ -13,8 +13,12 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,16 +48,26 @@ public class Client {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new ClientHandler());
+                    ch.pipeline().addLast(new StringDecoder(), new StringEncoder(), new ClientHandler());
                 }
             });
 
             // Start the client.
             ChannelFuture f = b.connect(HOST, PORT).sync(); // (5)
 
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+            while (true) {
+                String line = in.readLine();
+                if (line == null || "quit".equalsIgnoreCase(line)) {
+                    break;
+                }
+                f.channel().writeAndFlush(line + "\r\n");
+            }
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
             workerGroup.shutdownGracefully();
@@ -218,11 +232,16 @@ public class Client {
 
         ConsoleHelper.writeMessage("Введите адрес сервера");
 
-        String host = ConsoleHelper.readString();
+//        String host = ConsoleHelper.readString();
+
 
         ConsoleHelper.writeMessage("Введите порт");
 
-        int port = ConsoleHelper.readInt();
+//        int port = ConsoleHelper.readInt();
+
+        String host = "127.0.0.1";
+        int port = 8080;
+
 
         Client client = new Client(host, port);
         client.run();

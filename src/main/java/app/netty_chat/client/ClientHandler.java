@@ -1,29 +1,29 @@
 package app.netty_chat.client;
 
+import app.netty_chat.ServerHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 
-public class ClientHandler extends ChannelInboundHandlerAdapter {
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public class ClientHandler extends SimpleChannelInboundHandler<String> {
+
+    private final Logger logger = Logger.getLogger(ClientHandler.class.getName());
+
 
     @Override
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        ByteBuf m = (ByteBuf) msg; // (1)
-        try {
-            while (m.isReadable()) { // (1)
-                System.out.print((char) m.readByte());
-                System.out.flush();
-            }
-        } finally {
-            m.release();
-        }
+    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+        System.out.print(msg);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        logger.log(Level.SEVERE, "Ошибка соединения");
         cause.printStackTrace();
         ctx.close();
     }
-
 
 }
