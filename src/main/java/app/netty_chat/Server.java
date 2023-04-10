@@ -1,5 +1,7 @@
 package app.netty_chat;
 
+import app.netty_chat.service.PropertiesLoader;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -11,17 +13,11 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
 /**
- *
  *
  */
 public class Server {
@@ -33,17 +29,19 @@ public class Server {
     private final int PORT;
     private final String HOST;
 
+    private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
+
+    {
+        PORT = Integer.parseInt(propertiesLoader.getProperty("server.port"));
+        HOST = propertiesLoader.getProperty("server.host");
+    }
+
     public int getPORT() {
         return PORT;
     }
 
     public String getHOST() {
         return HOST;
-    }
-
-    public Server(int port, String host) {
-        PORT = port;
-        HOST = host;
     }
 
     public void run() throws Exception {
@@ -83,22 +81,8 @@ public class Server {
 
     public static void main(String[] args) {
 
-//        ConsoleHelper.writeMessage("Введите порт сервера:");
-
-        Properties properties = new Properties();
-        try (InputStream input = new FileInputStream("application.properties")) {
-            properties.load(input);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        int port = Integer.parseInt(properties.getProperty("server.port"));
-        String host = properties.getProperty("server.host");
-
         try {
-            Server server = new Server(port, host);
+            Server server = new Server();
             server.run();
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Произошла ошибка при запуске или работе сервера {0}", e.getMessage());

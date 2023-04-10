@@ -16,7 +16,7 @@ import java.util.logging.Logger;
 
 public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
-    ChatChannels chatChannels= ChatChannels.getInstance();
+    ChatChannels chatChannels = ChatChannels.getInstance();
     List<Channel> channels = chatChannels.getChannels();
 
     private final Logger logger = Logger.getLogger(ServerHandler.class.getName());
