@@ -1,15 +1,11 @@
 package app.netty_chat;
 
-
 import app.netty_chat.dao.ChatChannels;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
-
 import io.netty.channel.SimpleChannelInboundHandler;
 
-import java.util.ArrayList;
 import java.util.List;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -21,6 +17,12 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
     private final Logger logger = Logger.getLogger(ServerHandler.class.getName());
 
+
+    /**
+     *
+     * @param ctx
+     * @throws Exception
+     */
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         logger.log(Level.INFO, "пользователь подключился {0}", ctx.channel().remoteAddress());
@@ -71,7 +73,20 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
         }
     }
 
-    //    /**
+    /**
+     *
+     */
+    void serverHandshake() {
+
+    }
+
+}
+
+
+
+
+
+//    /**
 //     * Обработчик сообщений
 //     */
 //    private static class Handler extends Thread {
@@ -208,4 +223,3 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 //    }
 
 
-}

@@ -13,6 +13,9 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.ClassResolvers;
+import io.netty.handler.codec.serialization.ObjectDecoder;
+import io.netty.handler.codec.serialization.ObjectEncoder;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 
@@ -35,7 +38,7 @@ public class Client {
 
     private static final Logger logger = Logger.getLogger(Client.class.getName());
 
-    public void run () {
+    public void run() {
 
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -47,7 +50,10 @@ public class Client {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
-                    ch.pipeline().addLast(new StringDecoder(), new StringEncoder(), new ClientHandler());
+                    ch.pipeline().addLast(
+                            new ObjectEncoder(),
+                            new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                            new ClientHandler());
                 }
             });
 
@@ -60,7 +66,7 @@ public class Client {
                 if (line == null || "quit".equalsIgnoreCase(line)) {
                     break;
                 }
-                f.channel().writeAndFlush(line + "\r");
+                f.channel().writeAndFlush(new Message(MessageType.TEXT, line + "\r"));
             }
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();
@@ -71,7 +77,6 @@ public class Client {
         } finally {
             workerGroup.shutdownGracefully();
         }
-
 
 
     }
