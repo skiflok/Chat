@@ -5,6 +5,7 @@ import app.netty_chat.Connection;
 import app.netty_chat.ConsoleHelper;
 import app.netty_chat.Message;
 import app.netty_chat.MessageType;
+import app.netty_chat.service.PropertiesLoader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -30,11 +31,18 @@ public class Client {
     private final String HOST;
     private final int PORT;
 
+    private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
 
-    public Client(String HOST, int PORT) {
-        this.HOST = HOST;
-        this.PORT = PORT;
+    {
+        PORT = Integer.parseInt(propertiesLoader.getProperty("server.port"));
+        HOST = propertiesLoader.getProperty("server.host");
     }
+
+
+//    public Client(String HOST, int PORT) {
+//        this.HOST = HOST;
+//        this.PORT = PORT;
+//    }
 
     private static final Logger logger = Logger.getLogger(Client.class.getName());
 
@@ -80,6 +88,20 @@ public class Client {
 
 
     }
+
+    public static void main(String[] args) throws IOException {
+
+        Client client = new Client();
+        client.run();
+
+    }
+
+    public void sendMessage(String str) {
+//        socket.writeAndFlush(str);
+
+    }
+
+}
 
 //    protected Connection connection;
 //
@@ -232,27 +254,3 @@ public class Client {
 //
 //    }
 
-    public static void main(String[] args) throws IOException {
-
-        Properties properties = new Properties();
-        try (InputStream input = new FileInputStream("application.properties")) {
-            properties.load(input);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        int port = Integer.parseInt(properties.getProperty("server.port"));
-        String host = properties.getProperty("server.host");
-
-        Client client = new Client(host, port);
-        client.run();
-
-
-//        Client client = new Client();
-//        client.run();
-
-    }
-
-}
