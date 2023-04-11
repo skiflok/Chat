@@ -38,11 +38,13 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
+        logger.log(Level.INFO, "Ответ на запрос авторизации от {0} ", ctx.channel().remoteAddress());
         if (msg.getMessageType() == MessageType.USER_NAME) {
-
+            logger.log(Level.INFO, "Тип соответствует протоколу");
             String userName = msg.getMessage();
 
             if (!userName.isEmpty()) {
+                logger.log(Level.INFO, "Имя не пустое");
 
                 ChatChannels.getInstance().getConnectionMap().put(userName, channel);
 
@@ -54,6 +56,7 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
                     ch.writeAndFlush(new Message(MessageType.USER_ADDED,
                             "Пользователь " + userName + " подключился к чату"));
                 }
+                logger.log(Level.INFO, "Авторизация {0} завершена", ctx.channel().remoteAddress());
 
             } else {
                 logger.log(Level.SEVERE, "Ошибка авторизации. Попытка подключения к серверу с пустым именем от {0}", ctx.channel().remoteAddress());
