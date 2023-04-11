@@ -17,8 +17,14 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+// TODO Добавить jackson или protobuf
+// TODO logback логгер
+// TODO авторизация
+// TODO BD
+
 
 /**
+ *
  *
  */
 public class Server {
