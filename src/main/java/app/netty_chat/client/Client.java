@@ -38,12 +38,6 @@ public class Client {
         HOST = propertiesLoader.getProperty("server.host");
     }
 
-
-//    public Client(String HOST, int PORT) {
-//        this.HOST = HOST;
-//        this.PORT = PORT;
-//    }
-
     private static final Logger logger = Logger.getLogger(Client.class.getName());
 
     public void run() {
