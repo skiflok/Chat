@@ -29,9 +29,9 @@ public class ClientController implements Initializable {
         client = new Client();
     }
 
-    public void sendMsgAction(ActionEvent actionEvent) {
-        client.sendMessage(msgField.getText());
-        msgField.clear();
-        msgField.requestFocus();
-    }
+//    public void sendMsgAction(ActionEvent actionEvent) {
+//        client.sendMessage(msgField.getText());
+//        msgField.clear();
+//        msgField.requestFocus();
+//    }
 }

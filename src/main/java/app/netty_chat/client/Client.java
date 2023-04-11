@@ -7,10 +7,7 @@ import app.netty_chat.Message;
 import app.netty_chat.MessageType;
 import app.netty_chat.service.PropertiesLoader;
 import io.netty.bootstrap.Bootstrap;
-import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.EventLoopGroup;
+import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -31,6 +28,11 @@ public class Client {
     private final String HOST;
     private final int PORT;
 
+    private Channel channel;
+
+    public void setChannel(Channel channel) {
+        this.channel = channel;
+    }
     private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
 
     {
@@ -52,29 +54,31 @@ public class Client {
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
+
+                    setChannel(ch);
+
                     ch.pipeline().addLast(
                             new ObjectEncoder(),
                             new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                            new ClientHandler());
+                            new ClientAuthHandler()
+                    );
                 }
             });
 
             // Start the client.
             ChannelFuture f = b.connect(HOST, PORT).sync(); // (5)
 
-            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-            while (true) {
-                String line = in.readLine();
-                if (line == null || "quit".equalsIgnoreCase(line)) {
-                    break;
-                }
-                f.channel().writeAndFlush(new Message(MessageType.TEXT, line + "\r"));
-            }
+//            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+//            while (true) {
+//                String line = in.readLine();
+//                if (line == null || "quit".equalsIgnoreCase(line)) {
+//                    break;
+//                }
+//                f.channel().writeAndFlush(new Message(MessageType.TEXT, line + "\r"));
+//            }
             // Wait until the connection is closed.
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
             workerGroup.shutdownGracefully();
@@ -88,12 +92,14 @@ public class Client {
         Client client = new Client();
         client.run();
 
+//        while (true) {
+//            client.sendMessage(ConsoleHelper.readString());
+//        }
     }
 
-    public void sendMessage(String str) {
-//        socket.writeAndFlush(str);
-
-    }
+//    public void sendMessage(String str) {
+//        channel.writeAndFlush(new Message(MessageType.TEXT, str));
+//    }
 
 }
 
