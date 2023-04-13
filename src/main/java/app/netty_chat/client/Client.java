@@ -1,10 +1,5 @@
 package app.netty_chat.client;
 
-
-import app.netty_chat.Connection;
-import app.netty_chat.ConsoleHelper;
-import app.netty_chat.Message;
-import app.netty_chat.MessageType;
 import app.netty_chat.service.PropertiesLoader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
@@ -14,13 +9,9 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
-import io.netty.handler.codec.string.StringDecoder;
-import io.netty.handler.codec.string.StringEncoder;
+
 
 import java.io.*;
-import java.net.Socket;
-import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Client {
@@ -69,34 +60,6 @@ public class Client {
             ChannelFuture f = b.connect(HOST, PORT).sync(); // (5)
             setChannel(f.channel());
 
-
-//            new Thread(() -> {
-//                while (true) {
-//                    String line = ConsoleHelper.readString();
-//                    if (line == null || "/exit".equals(line)) {
-//                        break;
-//                    }
-//                    sendMessage(line);
-//                }
-//            }).start();
-
-//            f.channel().closeFuture().addListener((ChannelFutureListener)
-//                    channelFuture -> workerGroup.shutdownGracefully());
-
-
-//             Ввод сообщений с консоли и отправка на сервер
-//            ClientHandler handler = (ClientHandler) channel.pipeline().get("ClientHandler");
-//            handler.readMessageFromConsoleAndSendMessage();
-
-//            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-//            while (true) {
-//                String line = in.readLine();
-//                if (line == null || "quit".equalsIgnoreCase(line)) {
-//                    break;
-//                }
-//                f.channel().writeAndFlush(new Message(MessageType.TEXT, line + "\r"));
-//            }
-            // Wait until the connection is closed.
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -112,14 +75,7 @@ public class Client {
         Client client = new Client();
         client.run();
 
-//        while (true) {
-//            client.sendMessage(ConsoleHelper.readString());
-//        }
     }
-
-//    public void sendMessage(String str) {
-//        channel.writeAndFlush(new Message(MessageType.TEXT, str));
-//    }
 
 }
 
