@@ -2,6 +2,9 @@ package app.netty_chat;
 
 import app.netty_chat.service.PropertiesLoader;
 
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -14,8 +17,7 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
 
 // TODO Добавить jackson или protobuf
 // TODO logback логгер
@@ -29,9 +31,10 @@ import java.util.logging.Logger;
  */
 public class Server {
 
-    private static final Logger logger = Logger.getLogger(Server.class.getName());
+//    private static final Logger logger = Logger.getLogger(Server.class.getName());
 
-//    private static final Map<String, Connection> connectionMap = new ConcurrentHashMap<>();
+    private static final Logger logger
+            = LoggerFactory.getLogger(Server.class);
 
     private final int PORT;
     private final String HOST;
@@ -75,8 +78,8 @@ public class Server {
                     .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
             ChannelFuture f = b.bind(HOST, PORT).sync(); // (7)
-            logger.log(Level.INFO, "Сервер успешно запущен на хосте {0}", this.getHOST());
-            logger.log(Level.INFO, "Сервер успешно запущен на порту {0}", this.getPORT());
+//            logger.log(Level.INFO, "Сервер успешно запущен на хосте {0}", this.getHOST());
+//            logger.log(Level.INFO, "Сервер успешно запущен на порту {0}", this.getPORT());
             f.channel().closeFuture().sync();
 
         } catch (Exception e) {
@@ -92,11 +95,13 @@ public class Server {
 
     public static void main(String[] args) {
 
+        logger.info("Example log from {}", Server.class.getSimpleName());
+
         try {
             Server server = new Server();
             server.run();
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Произошла ошибка при запуске или работе сервера {0}", e.getMessage());
+//            logger.log(Level.SEVERE, "Произошла ошибка при запуске или работе сервера {0}", e.getMessage());
             throw new RuntimeException(e);
 
         }
