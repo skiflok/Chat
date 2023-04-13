@@ -33,6 +33,7 @@ public class Client {
     public void setChannel(Channel channel) {
         this.channel = channel;
     }
+
     private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
 
     {
@@ -55,18 +56,37 @@ public class Client {
                 @Override
                 public void initChannel(SocketChannel ch) throws Exception {
 
-                    setChannel(ch);
-
                     ch.pipeline().addLast(
-                            new ObjectEncoder(),
                             new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                            new ClientAuthHandler()
+                            new ClientAuthHandler(),
+//                            new ClientHandler(ch),
+                            new ObjectEncoder()
                     );
                 }
             });
 
             // Start the client.
             ChannelFuture f = b.connect(HOST, PORT).sync(); // (5)
+            setChannel(f.channel());
+
+
+//            new Thread(() -> {
+//                while (true) {
+//                    String line = ConsoleHelper.readString();
+//                    if (line == null || "/exit".equals(line)) {
+//                        break;
+//                    }
+//                    sendMessage(line);
+//                }
+//            }).start();
+
+//            f.channel().closeFuture().addListener((ChannelFutureListener)
+//                    channelFuture -> workerGroup.shutdownGracefully());
+
+
+//             Ввод сообщений с консоли и отправка на сервер
+//            ClientHandler handler = (ClientHandler) channel.pipeline().get("ClientHandler");
+//            handler.readMessageFromConsoleAndSendMessage();
 
 //            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 //            while (true) {

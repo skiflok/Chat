@@ -10,6 +10,7 @@ package app.netty_chat;
 // TODO проверка повторного подключения с данным именем
 // TODO если все успешно добавить пользователя в мапу конектов
 
+import app.netty_chat.client.ClientHandler;
 import app.netty_chat.dao.ChatChannels;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -48,15 +49,22 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
 
                 ChatChannels.getInstance().getConnectionMap().put(userName, channel);
 
+
+                channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));
+
                 ctx.pipeline().remove(this);
                 ctx.pipeline().addLast(new ServerMessageHandler());
-                channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));
 
                 for (Channel ch : ChatChannels.getInstance().getConnectionMap().values()) {
                     ch.writeAndFlush(new Message(MessageType.USER_ADDED,
-                            "Пользователь " + userName + " подключился к чату"));
+                            "[Сервер] : Пользователь " + userName + " подключился к чату"));
                 }
+
+                ConsoleHelper.writeMessage(ChatChannels.getInstance().getConnectionMap().toString());
+
                 logger.log(Level.INFO, "Авторизация {0} завершена", ctx.channel().remoteAddress());
+                logger.log(Level.INFO, ctx.pipeline().toString());
+
 
             } else {
                 logger.log(Level.SEVERE, "Ошибка авторизации. Попытка подключения к серверу с пустым именем от {0}", ctx.channel().remoteAddress());

@@ -16,12 +16,12 @@ public class ChatChannels {
 
     private final List<Channel> channels = new ArrayList<>();
 
-    public Map<String, Channel> getConnectionMap() {
-        return connectionMap;
-    }
 
     private final Map<String, Channel> connectionMap = new ConcurrentHashMap<>();
 
+    public Map<String, Channel> getConnectionMap() {
+        return connectionMap;
+    }
     private ChatChannels() {}
 
     public List<Channel> getChannels() {

@@ -41,7 +41,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
         logger.log(Level.INFO, "Пользователь {0} прислал сообщение", ctx.channel().remoteAddress());
         System.out.println(msg.getMessage());
 //        broadcastMessage(msg);
-        for (Channel channel : channels) {
+        for (Channel channel : chatChannels.getConnectionMap().values()) {
             if (channel != ctx.channel()) {
                 channel.writeAndFlush(new Message(MessageType.TEXT,
                         "[" + ctx.channel().remoteAddress() + "] " + msg.getMessage() + "\n"));
