@@ -31,8 +31,6 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
  */
 public class Server {
 
-//    private static final Logger logger = Logger.getLogger(Server.class.getName());
-
     private static final Logger logger
             = LoggerFactory.getLogger(Server.class);
 
@@ -78,8 +76,7 @@ public class Server {
                     .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
             ChannelFuture f = b.bind(HOST, PORT).sync(); // (7)
-//            logger.log(Level.INFO, "Сервер успешно запущен на хосте {0}", this.getHOST());
-//            logger.log(Level.INFO, "Сервер успешно запущен на порту {0}", this.getPORT());
+            logger.info("Сервер успешно запущен. HOST = {}, PORT = {}", this.getHOST(), this.getPORT());
             f.channel().closeFuture().sync();
 
         } catch (Exception e) {
@@ -95,15 +92,12 @@ public class Server {
 
     public static void main(String[] args) {
 
-        logger.info("Example log from {}", Server.class.getSimpleName());
-
         try {
             Server server = new Server();
             server.run();
         } catch (Exception e) {
-//            logger.log(Level.SEVERE, "Произошла ошибка при запуске или работе сервера {0}", e.getMessage());
+            logger.warn("Произошла ошибка при запуске или работе сервера {}", e.getMessage());
             throw new RuntimeException(e);
-
         }
     }
 
