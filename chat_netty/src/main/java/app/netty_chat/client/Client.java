@@ -9,13 +9,15 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 import java.io.*;
-import java.util.logging.Logger;
 
 public class Client {
 
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
     private final String HOST;
     private final int PORT;
 
@@ -32,7 +34,13 @@ public class Client {
         HOST = propertiesLoader.getProperty("server.host");
     }
 
-    private static final Logger logger = Logger.getLogger(Client.class.getName());
+    public String getHOST() {
+        return HOST;
+    }
+
+    public int getPORT() {
+        return PORT;
+    }
 
     public void run() {
 
@@ -45,7 +53,7 @@ public class Client {
             b.option(ChannelOption.SO_KEEPALIVE, true); // (4)
             b.handler(new ChannelInitializer<SocketChannel>() {
                 @Override
-                public void initChannel(SocketChannel ch) throws Exception {
+                public void initChannel(SocketChannel ch)  {
 
                     ch.pipeline().addLast(
                             new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
@@ -60,6 +68,8 @@ public class Client {
             ChannelFuture f = b.connect(HOST, PORT).sync(); // (5)
             setChannel(f.channel());
 
+            logger.info("Клиент успешно запущен. HOST = {}, PORT = {}", this.getHOST(), this.getPORT());
+
             f.channel().closeFuture().sync();
         } catch (InterruptedException e) {
             throw new RuntimeException(e);
@@ -70,7 +80,7 @@ public class Client {
 
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
 
         Client client = new Client();
         client.run();

@@ -52,7 +52,7 @@ public class Server {
         return HOST;
     }
 
-    public void run() throws Exception {
+    public void run()  {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -64,7 +64,7 @@ public class Server {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
 
                         @Override
-                        protected void initChannel(SocketChannel socketChannel) throws Exception {
+                        protected void initChannel(SocketChannel socketChannel)  {
                             socketChannel.pipeline().addLast(
                                     new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
                                     new ServerAuthHandler(),
@@ -85,9 +85,6 @@ public class Server {
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
-
-
-
     }
 
     public static void main(String[] args) {

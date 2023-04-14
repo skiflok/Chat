@@ -10,24 +10,23 @@ package app.netty_chat;
 // TODO проверка повторного подключения с данным именем
 // TODO если все успешно добавить пользователя в мапу конектов
 
-import app.netty_chat.client.ClientHandler;
 import app.netty_chat.dao.ChatChannels;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
 
     private Channel channel;
 
-    private final Logger logger = Logger.getLogger(ServerAuthHandler.class.getName());
+    private static final Logger logger
+            = LoggerFactory.getLogger(ServerAuthHandler.class);
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.log(Level.INFO, "Попытка подключения {0}, запрос на авторизацию", ctx.channel().remoteAddress());
+    public void channelActive(ChannelHandlerContext ctx)  {
+        logger.info("Попытка подключения {}, запрос на авторизацию", ctx.channel().remoteAddress());
         this.channel = ctx.channel();
         channel.writeAndFlush(new Message(MessageType.NAME_REQUEST));
     }
@@ -38,42 +37,39 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-        logger.log(Level.INFO, "Ответ на запрос авторизации от {0} ", ctx.channel().remoteAddress());
+    protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
+        logger.info("Ответ на запрос авторизации от {} ", ctx.channel().remoteAddress());
         if (msg.getMessageType() == MessageType.USER_NAME) {
-            logger.log(Level.INFO, "Тип соответствует протоколу");
+            logger.debug("Тип соответствует протоколу\n");
             String userName = msg.getMessage();
 
             if (!userName.isEmpty()) {
-                logger.log(Level.INFO, "Имя не пустое");
+                logger.debug("Имя не пустое");
 
                 ChatChannels.getInstance().getConnectionMap().put(userName, channel);
 
-
                 channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));
-
                 ctx.pipeline().remove(this);
                 ctx.pipeline().addLast(new ServerMessageHandler());
 
                 for (Channel ch : ChatChannels.getInstance().getConnectionMap().values()) {
                     ch.writeAndFlush(new Message(MessageType.USER_ADDED,
-                            "[Сервер] : Пользователь " + userName + " подключился к чату"));
+                            "[Сервер] : Пользователь " + userName + " подключился к чату\n"));
                 }
 
-                ConsoleHelper.writeMessage(ChatChannels.getInstance().getConnectionMap().toString());
+                logger.debug("Список соединений {}", ChatChannels.getInstance().getConnectionMap().toString());
+                logger.debug("Список хендлеров {}", ctx.pipeline().toString());
 
-                logger.log(Level.INFO, "Авторизация {0} завершена", ctx.channel().remoteAddress());
-                logger.log(Level.INFO, ctx.pipeline().toString());
-
+                logger.info("Авторизация {} завершена, пользователь {}", ctx.channel().remoteAddress(), userName);
 
             } else {
-                logger.log(Level.SEVERE, "Ошибка авторизации. Попытка подключения к серверу с пустым именем от {0}", ctx.channel().remoteAddress());
+                logger.info("Ошибка авторизации. Попытка подключения к серверу с пустым именем от {}", ctx.channel().remoteAddress());
                 channel.writeAndFlush(new Message(MessageType.NAME_REQUEST));
             }
 
 
         } else {
-            logger.log(Level.SEVERE, "Ошибка авторизации. Тип сообщения не соответствует протоколу {0}", ctx.channel().remoteAddress());
+            logger.info("Ошибка авторизации. Тип сообщения не соответствует протоколу {}", ctx.channel().remoteAddress());
             channel.writeAndFlush(new Message(MessageType.NAME_REQUEST));
         }
 

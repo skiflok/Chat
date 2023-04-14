@@ -4,21 +4,21 @@ import app.netty_chat.dao.ChatChannels;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
 
     ChatChannels chatChannels = ChatChannels.getInstance();
     List<Channel> channels = chatChannels.getChannels();
 
-    private final Logger logger = Logger.getLogger(ServerMessageHandler.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ServerMessageHandler.class);
 
 
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        logger.log(Level.INFO, "пользователь подключился {0}", ctx.channel().remoteAddress());
+    public void channelActive(ChannelHandlerContext ctx)  {
+        logger.info("пользователь подключился {}", ctx.channel().remoteAddress());
         // Notify clients when someone disconnects.
         channels.add(ctx.channel());
         ctx.writeAndFlush(new Message(MessageType.TEXT,
@@ -29,17 +29,16 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         // Notify clients when someone disconnects.
-        logger.log(Level.INFO, "пользователь отключился {0}", ctx.channel().remoteAddress());
+        logger.info("пользователь {} отключился {}", "[ИМЯ]", ctx.channel().remoteAddress());
         broadcastMessage("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!\n");
         channels.remove(ctx.channel());
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws Exception {
-        logger.log(Level.INFO, "Пользователь {0} прислал сообщение", ctx.channel().remoteAddress());
-        System.out.println(msg.getMessage());
+    protected void channelRead0(ChannelHandlerContext ctx, Message msg)  {
+        logger.debug("Пользователь {} прислал сообщение = {}", ctx.channel().remoteAddress(), msg.getMessage());
 //        broadcastMessage(msg);
         for (Channel channel : chatChannels.getConnectionMap().values()) {
             if (channel != ctx.channel()) {
@@ -53,8 +52,8 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.log(Level.SEVERE, "Ошибка  {0}", cause.getMessage());
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)  {
+        logger.info("Ошибка  {}", cause.getMessage());
         channels.remove(ctx.channel());
         ctx.close();
     }
