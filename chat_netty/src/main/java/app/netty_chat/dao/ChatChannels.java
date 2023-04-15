@@ -6,13 +6,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class ChatChannels {
 
     private static ChatChannels instance = null;
 
-    private final Logger logger = Logger.getLogger(ChatChannels.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ChatChannels.class);
 
     private final List<Channel> channels = new ArrayList<>();
 
