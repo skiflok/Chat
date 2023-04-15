@@ -1,4 +1,4 @@
-package app.netty_chat;
+package app.netty_chat.message;
 
 /**
  * - Когда новый клиент хочет подсоединиться к серверу, сервер должен запросить имя
