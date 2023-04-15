@@ -1,6 +1,8 @@
 package app.netty_chat;
 
 import app.netty_chat.dao.ChatChannels;
+import app.netty_chat.message.Message;
+import app.netty_chat.message.MessageType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -64,10 +66,10 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
         }
     }
 
-    /**
-     *
-     */
-    void serverHandshake() {
-
-    }
+//    /**
+//     *
+//     */
+//    void serverHandshake() {
+//
+//    }
 }

@@ -11,6 +11,8 @@ package app.netty_chat;
 // TODO если все успешно добавить пользователя в мапу конектов
 
 import app.netty_chat.dao.ChatChannels;
+import app.netty_chat.message.Message;
+import app.netty_chat.message.MessageType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -46,6 +48,8 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
             if (!userName.isEmpty()) {
                 logger.debug("Имя не пустое");
 
+
+                //TODO проверка на повторное подключение
                 ChatChannels.getInstance().getConnectionMap().put(userName, channel);
 
                 channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));

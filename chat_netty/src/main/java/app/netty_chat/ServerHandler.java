@@ -19,12 +19,11 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
 
     /**
-     *
      * @param ctx
      * @throws Exception
      */
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
         logger.log(Level.INFO, "пользователь подключился {0}", ctx.channel().remoteAddress());
         // Notify clients when someone disconnects.
         channels.add(ctx.channel());
@@ -35,7 +34,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx) {
         // Notify clients when someone disconnects.
         logger.log(Level.INFO, "пользователь отключился {0}", ctx.channel().remoteAddress());
 //        ctx.writeAndFlush("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!\n");
@@ -45,7 +44,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, String msg) {
         logger.log(Level.INFO, "Пользователь {0} прислал сообщение", ctx.channel().remoteAddress());
 //        ctx.channel().writeAndFlush("[" + ctx.channel().remoteAddress() + "] " + msg);
         System.out.println(msg);
@@ -61,7 +60,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         logger.log(Level.SEVERE, "Ошибка  {0}", cause.getMessage());
         channels.remove(ctx.channel());
         ctx.close();
@@ -78,7 +77,7 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
      */
     void serverHandshake(ChannelHandlerContext ctx) {
         // TODO запросить авторизацию
-        ctx.channel().writeAndFlush(new Message(MessageType.NAME_REQUEST, ""));
+//        ctx.channel().writeAndFlush(new Message(MessageType.NAME_REQUEST, ""));
 
 
         // TODO проверить валидность на авторизацию
@@ -88,9 +87,6 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     }
 
 }
-
-
-
 
 
 //    /**

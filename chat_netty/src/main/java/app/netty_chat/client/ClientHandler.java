@@ -1,8 +1,8 @@
 package app.netty_chat.client;
 
 import app.netty_chat.ConsoleHelper;
-import app.netty_chat.Message;
-import app.netty_chat.MessageType;
+import app.netty_chat.message.Message;
+import app.netty_chat.message.MessageType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -18,8 +18,11 @@ public class ClientHandler extends SimpleChannelInboundHandler<Message> {
 
     private final Channel channel;
 
-    public ClientHandler(Channel channel) {
+    private final String userName;
+
+    public ClientHandler(Channel channel, String userName) {
         this.channel = channel;
+        this.userName = userName;
     }
 
     @Override
@@ -37,7 +40,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<Message> {
     public void sendMessage(String text) {
         logger.debug("sendMessage");
         // Отправка сообщения на сервер
-        channel.writeAndFlush(new Message(MessageType.TEXT, text));
+        channel.writeAndFlush(new Message(MessageType.TEXT, text, userName));
     }
 
     public void readMessageFromConsoleAndSendMessage() throws IOException {
