@@ -20,7 +20,6 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 
 
 // TODO Добавить jackson или protobuf
-// TODO logback логгер
 // TODO авторизация
 // TODO BD
 

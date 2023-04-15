@@ -1,16 +1,10 @@
 package app.netty_chat;
 
-
-// TODO запросить авторизацию
-//        ctx.channel().writeAndFlush(new Message(MessageType.NAME_REQUEST, ""));
-
-
-// TODO проверить валидность на авторизацию
-// TODO проверка пустого имени
-// TODO проверка повторного подключения с данным именем
-// TODO если все успешно добавить пользователя в мапу конектов
+//TODO запрос пароля
 
 import app.netty_chat.dao.UserStorage;
+import app.netty_chat.exception.AuthorisationErrorException;
+import app.netty_chat.exception.NameAlreadyUseException;
 import app.netty_chat.message.Message;
 import app.netty_chat.message.MessageType;
 import io.netty.channel.Channel;
@@ -27,7 +21,7 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
             = LoggerFactory.getLogger(ServerAuthHandler.class);
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx)  {
+    public void channelActive(ChannelHandlerContext ctx) {
         logger.info("Попытка подключения {}, запрос на авторизацию", ctx.channel().remoteAddress());
         this.channel = ctx.channel();
         channel.writeAndFlush(new Message(MessageType.NAME_REQUEST));
@@ -39,43 +33,45 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message msg) {
+    protected void channelRead0(ChannelHandlerContext ctx, Message msg) throws NameAlreadyUseException, AuthorisationErrorException {
         logger.info("Ответ на запрос авторизации от {} ", ctx.channel().remoteAddress());
-        if (msg.getMessageType() == MessageType.USER_NAME) {
-            logger.debug("Тип соответствует протоколу\n");
-            String userName = msg.getMessage();
 
-            if (!userName.isEmpty()) {
-                logger.debug("Имя не пустое");
-
-
-                //TODO проверка на повторное подключение
-                UserStorage.getInstance().getConnectionMap().put(userName, channel);
-
-                channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));
-                ctx.pipeline().remove(this);
-                ctx.pipeline().addLast(new ServerMessageHandler());
-
-                for (Channel ch : UserStorage.getInstance().getConnectionMap().values()) {
-                    ch.writeAndFlush(new Message(MessageType.USER_ADDED,
-                            "[Сервер] : Пользователь " + userName + " подключился к чату\n"));
-                }
-
-                logger.info("Список соединений\n {}", UserStorage.getInstance().toString());
-                logger.debug("Список хендлеров {}", ctx.pipeline().toString());
-
-                logger.info("Авторизация {} завершена, пользователь {}", ctx.channel().remoteAddress(), userName);
-
-            } else {
-                logger.info("Ошибка авторизации. Попытка подключения к серверу с пустым именем от {}", ctx.channel().remoteAddress());
-                channel.writeAndFlush(new Message(MessageType.NAME_REQUEST));
-            }
-
-
-        } else {
+        if (msg.getMessageType() != MessageType.USER_NAME) {
             logger.info("Ошибка авторизации. Тип сообщения не соответствует протоколу {}", ctx.channel().remoteAddress());
             channel.writeAndFlush(new Message(MessageType.NAME_REQUEST));
+            throw new AuthorisationErrorException();
         }
+
+        logger.debug("Тип соответствует протоколу\n");
+        String userName = msg.getMessage();
+
+        if (userName.isEmpty()) {
+            logger.debug("Имя пустое");
+            logger.info("Ошибка авторизации. Попытка подключения к серверу с пустым именем от {}", ctx.channel().remoteAddress());
+            channel.writeAndFlush(new Message(MessageType.NAME_REQUEST));
+            throw new AuthorisationErrorException();
+        }
+
+        if (UserStorage.getInstance().getConnectionMap().containsKey(userName)) {
+            logger.info("Ошибка авторизации. Попытка подключения к серверу с уже используемым именем {} от {}", userName ,ctx.channel().remoteAddress());
+            channel.writeAndFlush(new Message(MessageType.NAME_REQUEST, userName + " уже используется"));
+            throw new NameAlreadyUseException();
+        }
+
+        UserStorage.getInstance().addUser(userName, channel);
+        channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));
+
+        ctx.pipeline().remove(this);
+        ctx.pipeline().addLast(new ServerMessageHandler());
+
+        for (Channel ch : UserStorage.getInstance().getConnectionMap().values()) {
+            ch.writeAndFlush(new Message(MessageType.USER_ADDED,
+                    "[Сервер] : Пользователь " + userName + " подключился к чату\n"));
+        }
+
+        logger.info("Список соединений\n {}", UserStorage.getInstance().toString());
+        logger.debug("Список хендлеров {}", ctx.pipeline().toString());
+        logger.info("Авторизация {} завершена, пользователь {}", ctx.channel().remoteAddress(), userName);
 
     }
 

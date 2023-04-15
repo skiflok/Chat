@@ -22,12 +22,12 @@ public class ClientAuthHandler extends SimpleChannelInboundHandler<Message> {
         logger.info(String.format("Тип сообщения %s ", msg.getMessageType()));
 
         if (msg.getMessageType() == MessageType.NAME_REQUEST) {
-            logger.info("Запрос авторизации от сервера");
-            ConsoleHelper.writeMessage("[Сервер] : " + msg.getMessageType().getMsg());
+            logger.info(String.format("%s. %s", msg.getMessageType().getMsg(), msg.getMessage()));
+            ConsoleHelper.writeMessage(String.format("[Сервер] : %s %s", msg.getMessageType().getMsg(), msg.getMessage()));
             userName = ConsoleHelper.readString();
             ctx.channel().writeAndFlush(new Message(MessageType.USER_NAME, userName));
         } else if (msg.getMessageType() == MessageType.NAME_ACCEPTED) {
-            ConsoleHelper.writeMessage("[Сервер] : " + msg.getMessageType().getMsg());
+            ConsoleHelper.writeMessage(String.format("[Сервер] : %s %s", msg.getMessageType().getMsg(), msg.getMessage()));
             logger.debug(ctx.pipeline().toString());
             ctx.pipeline().remove(this);
             ctx.pipeline().addAfter("ObjectDecoder#0", "ClientHandler#0", new ClientHandler(ctx.channel(), userName));
