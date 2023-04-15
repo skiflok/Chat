@@ -10,7 +10,7 @@ package app.netty_chat;
 // TODO проверка повторного подключения с данным именем
 // TODO если все успешно добавить пользователя в мапу конектов
 
-import app.netty_chat.dao.ChatChannels;
+import app.netty_chat.dao.ClientStorage;
 import app.netty_chat.message.Message;
 import app.netty_chat.message.MessageType;
 import io.netty.channel.Channel;
@@ -50,18 +50,18 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
 
 
                 //TODO проверка на повторное подключение
-                ChatChannels.getInstance().getConnectionMap().put(userName, channel);
+                ClientStorage.getInstance().getConnectionMap().put(userName, channel);
 
                 channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));
                 ctx.pipeline().remove(this);
                 ctx.pipeline().addLast(new ServerMessageHandler());
 
-                for (Channel ch : ChatChannels.getInstance().getConnectionMap().values()) {
+                for (Channel ch : ClientStorage.getInstance().getConnectionMap().values()) {
                     ch.writeAndFlush(new Message(MessageType.USER_ADDED,
                             "[Сервер] : Пользователь " + userName + " подключился к чату\n"));
                 }
 
-                logger.debug("Список соединений {}", ChatChannels.getInstance().getConnectionMap().toString());
+                logger.debug("Список соединений {}", ClientStorage.getInstance().getConnectionMap().toString());
                 logger.debug("Список хендлеров {}", ctx.pipeline().toString());
 
                 logger.info("Авторизация {} завершена, пользователь {}", ctx.channel().remoteAddress(), userName);

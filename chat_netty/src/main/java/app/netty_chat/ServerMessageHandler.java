@@ -1,6 +1,6 @@
 package app.netty_chat;
 
-import app.netty_chat.dao.ChatChannels;
+import app.netty_chat.dao.ClientStorage;
 import app.netty_chat.message.Message;
 import app.netty_chat.message.MessageType;
 import io.netty.channel.Channel;
@@ -13,8 +13,8 @@ import java.util.List;
 
 public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
 
-    ChatChannels chatChannels = ChatChannels.getInstance();
-    List<Channel> channels = chatChannels.getChannels();
+    ClientStorage clientStorage = ClientStorage.getInstance();
+    List<Channel> channels = clientStorage.getChannels();
 
     private static final Logger logger = LoggerFactory.getLogger(ServerMessageHandler.class);
 
@@ -42,7 +42,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     protected void channelRead0(ChannelHandlerContext ctx, Message msg)  {
         logger.debug("Пользователь {} прислал сообщение = {}", ctx.channel().remoteAddress(), msg.getMessage());
 //        broadcastMessage(msg);
-        for (Channel channel : chatChannels.getConnectionMap().values()) {
+        for (Channel channel : clientStorage.getConnectionMap().values()) {
             if (channel != ctx.channel()) {
                 channel.writeAndFlush(new Message(MessageType.TEXT,
                         "[" + ctx.channel().remoteAddress() + "] " + msg.getMessage() + "\n"));

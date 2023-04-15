@@ -1,6 +1,6 @@
 package app.netty_chat;
 
-import app.netty_chat.dao.ChatChannels;
+import app.netty_chat.dao.ClientStorage;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -12,8 +12,8 @@ import java.util.logging.Logger;
 
 public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
-    ChatChannels chatChannels = ChatChannels.getInstance();
-    List<Channel> channels = chatChannels.getChannels();
+    ClientStorage clientStorage = ClientStorage.getInstance();
+    List<Channel> channels = clientStorage.getChannels();
 
     private final Logger logger = Logger.getLogger(ServerHandler.class.getName());
 

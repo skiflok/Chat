@@ -11,32 +11,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class ChatChannels {
+public class ClientStorage {
 
-    private static ChatChannels instance = null;
+    private static ClientStorage instance = null;
 
-    private static final Logger logger = LoggerFactory.getLogger(ChatChannels.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientStorage.class);
 
     private final List<Channel> channels = new ArrayList<>();
-
 
     private final Map<String, Channel> connectionMap = new ConcurrentHashMap<>();
 
     public Map<String, Channel> getConnectionMap() {
         return connectionMap;
     }
-    private ChatChannels() {}
+
+    private ClientStorage() {
+    }
 
     public List<Channel> getChannels() {
         return channels;
     }
 
-    public static ChatChannels getInstance () {
+    public static ClientStorage getInstance() {
         if (instance == null) {
-            instance = new ChatChannels();
+            instance = new ClientStorage();
         }
         return instance;
     }
 
+    public void addUser () {
+
+    }
+
+    public void removeUser () {
+
+    }
 
 }
