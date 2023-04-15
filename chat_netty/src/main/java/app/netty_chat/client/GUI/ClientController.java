@@ -29,9 +29,9 @@
 //        client = new Client();
 //    }
 //
-////    public void sendMsgAction(ActionEvent actionEvent) {
+//    public void sendMsgAction(ActionEvent actionEvent) {
 ////        client.sendMessage(msgField.getText());
-////        msgField.clear();
-////        msgField.requestFocus();
-////    }
+//        msgField.clear();
+//        msgField.requestFocus();
+//    }
 //}

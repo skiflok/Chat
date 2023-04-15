@@ -12,7 +12,7 @@
 //
 //    @Override
 //    public void start(Stage stage) throws IOException {
-//        FXMLLoader fxmlLoader = new FXMLLoader(ClientGUI.class.getResource("/client_form_2.fxml"));
+//        FXMLLoader fxmlLoader = new FXMLLoader(ClientGUI.class.getResource("/client_form.fxml"));
 //        Scene scene = new Scene(fxmlLoader.load(), 400, 400);
 //        stage.setTitle("Chat client");
 //        stage.setScene(scene);
