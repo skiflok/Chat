@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.swing.text.html.parser.Entity;
+
 
 public class ClientStorage {
 
@@ -39,12 +41,23 @@ public class ClientStorage {
         return instance;
     }
 
-    public void addUser () {
-
+    public void addUser (String userName, Channel channel) {
+        //TODO
+        connectionMap.put(userName, channel);
     }
 
-    public void removeUser () {
-
+    public void removeUser (String userName) {
+        //TODO
+        connectionMap.remove(userName);
     }
 
+    @Override
+    public String toString() {
+        StringBuilder res = new StringBuilder();
+        for (var entry: connectionMap.entrySet()) {
+            res.append(entry);
+            res.append("\n");
+        }
+        return res.toString();
+    }
 }
