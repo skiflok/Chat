@@ -69,7 +69,7 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
                     "[Сервер] : Пользователь " + userName + " подключился к чату\n"));
         }
 
-        logger.info("Список соединений\n {}", UserStorage.getInstance().toString());
+        logger.info("Список соединений\n{}", UserStorage.getInstance().toString());
         logger.debug("Список хендлеров {}", ctx.pipeline().toString());
         logger.info("Авторизация {} завершена, пользователь {}", ctx.channel().remoteAddress(), userName);
 
