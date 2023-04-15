@@ -29,7 +29,46 @@
             <version>1.4.6</version>
         </dependency>
 
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx-controls &ndash;&gt;-->
 <!--        <dependency>-->
+<!--            <groupId>org.openjfx</groupId>-->
+<!--            <artifactId>javafx-controls</artifactId>-->
+<!--            <version>17.0.6</version>-->
+<!--        </dependency>-->
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx-base &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.openjfx</groupId>-->
+<!--            <artifactId>javafx-base</artifactId>-->
+<!--            <version>17.0.6</version>-->
+<!--        </dependency>-->
+
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx-fxml &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.openjfx</groupId>-->
+<!--            <artifactId>javafx-fxml</artifactId>-->
+<!--            <version>17.0.6</version>-->
+<!--        </dependency>-->
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx-web &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.openjfx</groupId>-->
+<!--            <artifactId>javafx-web</artifactId>-->
+<!--            <version>17.0.6</version>-->
+<!--        </dependency>-->
+
+
+<!--        &lt;!&ndash; https://mvnrepository.com/artifact/org.openjfx/javafx &ndash;&gt;-->
+<!--        <dependency>-->
+<!--            <groupId>org.openjfx</groupId>-->
+<!--            <artifactId>javafx</artifactId>-->
+<!--            <version>17.0.6</version>-->
+<!--            <type>pom</type>-->
+<!--        </dependency>-->
+
+
+        <!--        <dependency>-->
 <!--            <groupId>ch.qos.logback</groupId>-->
 <!--            <artifactId>logback-core</artifactId>-->
 <!--            <version>1.4.6</version>-->
@@ -45,6 +84,20 @@
 
 
     </dependencies>
+
+
+<!--    <build>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>org.openjfx</groupId>-->
+<!--                <artifactId>javafx-maven-plugin</artifactId>-->
+<!--                <version>0.0.3</version>-->
+<!--                <configuration>-->
+<!--                    <mainClass>src/main/java/app/netty_chat/client/ClientGUI.java</mainClass>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
 
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
