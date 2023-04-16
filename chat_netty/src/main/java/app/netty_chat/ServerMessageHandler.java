@@ -8,6 +8,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.Marker;
 
 import java.util.List;
 
@@ -34,12 +35,8 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     public void channelInactive(ChannelHandlerContext ctx) {
         // Notify clients when someone disconnects.
         logger.info("пользователь {} отключился {}", "[ИМЯ]", ctx.channel().remoteAddress());
-        broadcastMessage("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!\n");
-        for (var channel : userStorage.getConnectionMap().entrySet()) {
-            if (ctx.channel().equals(channel.getValue())) {
-                userStorage.removeUser(channel.getKey());
-            }
-        }
+        logger.info("Список соединений\n{}", UserStorage.getInstance().toString());
+        broadcastMessage("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!");
     }
 
     @Override
@@ -60,13 +57,20 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)  {
         logger.info("Ошибка  {}", cause.getMessage());
-        channels.remove(ctx.channel());
+        for (var channel : userStorage.getConnectionMap().entrySet()) {
+            if (ctx.channel().equals(channel.getValue())) {
+                userStorage.removeUser(channel.getKey());
+            }
+        }
+        logger.info("ctx {}", ctx);
         ctx.close();
     }
 
-    private void broadcastMessage(String message) {
+    private void broadcastMessage(String msg) {
+        logger.info("[{}]",msg);
         for (var channel : userStorage.getConnectionMap().values()) {
-            channel.writeAndFlush(message + "\n");
+            channel.writeAndFlush(new Message(MessageType.TEXT,msg + "\n"));
+            logger.info("channel = {}", channel);
         }
     }
 }
