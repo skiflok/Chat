@@ -8,27 +8,16 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
-
-import java.util.List;
 
 public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
 
     UserStorage userStorage = UserStorage.getInstance();
-    List<Channel> channels = userStorage.getChannels();
 
     private static final Logger logger = LoggerFactory.getLogger(ServerMessageHandler.class);
 
 
     public void channelActive(ChannelHandlerContext ctx)  {
         logger.info("пользователь подключился {}", ctx.channel().remoteAddress());
-        // Notify clients when someone disconnects.
-        channels.add(ctx.channel());
-        ctx.writeAndFlush(new Message(MessageType.TEXT,
-                "[SERVER] - " + ctx.channel().remoteAddress() + " has join the chat!\n"));
-        for (Channel channel : channels) {
-            System.out.println(channel);
-        }
     }
 
     @Override
