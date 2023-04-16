@@ -30,7 +30,8 @@ public class ClientAuthHandler extends SimpleChannelInboundHandler<Message> {
             ConsoleHelper.writeMessage(String.format("[Сервер] : %s %s", msg.getMessageType().getMsg(), msg.getMessage()));
             logger.debug(ctx.pipeline().toString());
             ctx.pipeline().remove(this);
-            ctx.pipeline().addAfter("ObjectDecoder#0", "ClientHandler#0", new ClientHandler(ctx.channel(), userName));
+            ctx.pipeline().addLast(new ClientHandler(ctx.channel(), userName));
+//            ctx.pipeline().addAfter("ObjectDecoder#0", "ClientHandler#0", new ClientHandler(ctx.channel(), userName));
             logger.debug(ctx.pipeline().toString());
             new Thread(() -> {
                 try {

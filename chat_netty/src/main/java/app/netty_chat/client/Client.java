@@ -57,9 +57,8 @@ public class Client {
 
                     ch.pipeline().addLast(
                             new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                            new ClientAuthHandler(),
-//                            new ClientHandler(ch),
-                            new ObjectEncoder()
+                            new ObjectEncoder(),
+                            new ClientAuthHandler()
                     );
                 }
             });

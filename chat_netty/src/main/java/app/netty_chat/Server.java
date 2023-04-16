@@ -66,9 +66,9 @@ public class Server {
                         protected void initChannel(SocketChannel socketChannel)  {
                             socketChannel.pipeline().addLast(
                                     new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                    new ServerAuthHandler(),
-//                                    new ServerMessageHandler(),
-                                    new ObjectEncoder());
+                                    new ObjectEncoder(),
+                                    new ServerAuthHandler()
+                            );
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)          // (5)
