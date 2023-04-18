@@ -25,7 +25,8 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
         // Notify clients when someone disconnects.
         logger.info("пользователь {} отключился {}", "[ИМЯ]", ctx.channel().remoteAddress());
         logger.info("Список соединений\n{}", UserStorage.getInstance().toString());
-        broadcastMessage("[SERVER] - " + ctx.channel().remoteAddress() + " has left the chat!");
+        broadcastMessage(new Message(MessageType.USER_REMOVED,
+                "[SERVER] - " + ctx.channel().remoteAddress() + " покинул чат!"));
     }
 
     @Override
@@ -55,10 +56,10 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
         ctx.close();
     }
 
-    private void broadcastMessage(String msg) {
+    private void broadcastMessage(Message msg) {
         logger.info("[{}]",msg);
         for (var channel : userStorage.getConnectionMap().values()) {
-            channel.writeAndFlush(new Message(MessageType.TEXT,msg + "\n"));
+            channel.writeAndFlush(msg);
             logger.info("channel = {}", channel);
         }
     }
