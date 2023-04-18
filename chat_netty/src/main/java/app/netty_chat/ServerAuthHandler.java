@@ -2,7 +2,7 @@ package app.netty_chat;
 
 //TODO запрос пароля
 
-import app.netty_chat.dao.UserStorage;
+import app.netty_chat.dao.ActiveConnectionStorage;
 import app.netty_chat.exception.AuthorisationErrorException;
 import app.netty_chat.exception.NameAlreadyUseException;
 import app.netty_chat.message.Message;
@@ -52,24 +52,24 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
             throw new AuthorisationErrorException();
         }
 
-        if (UserStorage.getInstance().getConnectionMap().containsKey(userName)) {
+        if (ActiveConnectionStorage.getInstance().getConnectionMap().containsKey(userName)) {
             logger.info("Ошибка авторизации. Попытка подключения к серверу с уже используемым именем {} от {}", userName ,ctx.channel().remoteAddress());
             channel.writeAndFlush(new Message(MessageType.NAME_REQUEST, userName + " уже используется"));
             throw new NameAlreadyUseException();
         }
 
-        UserStorage.getInstance().addUser(userName, channel);
+        ActiveConnectionStorage.getInstance().addUser(userName, channel);
         channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));
 
         ctx.pipeline().remove(this);
         ctx.pipeline().addLast(new ServerMessageHandler());
 
-        for (Channel ch : UserStorage.getInstance().getConnectionMap().values()) {
+        for (Channel ch : ActiveConnectionStorage.getInstance().getConnectionMap().values()) {
             ch.writeAndFlush(new Message(MessageType.USER_ADDED,
                     "[Сервер] : Пользователь " + userName + " подключился к чату\n"));
         }
 
-        logger.info("Список соединений\n{}", UserStorage.getInstance().toString());
+        logger.info("Список соединений\n{}", ActiveConnectionStorage.getInstance().toString());
         logger.debug("Список хендлеров {}", ctx.pipeline().toString());
         logger.info("Авторизация {} завершена, пользователь {}", ctx.channel().remoteAddress(), userName);
 

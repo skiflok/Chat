@@ -2,8 +2,6 @@ package app.netty_chat.dao;
 
 import io.netty.channel.Channel;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -11,13 +9,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
-public class UserStorage {
+public class ActiveConnectionStorage {
 
-    private static UserStorage instance = null;
+    private static ActiveConnectionStorage instance = null;
 
-    private static final Logger logger = LoggerFactory.getLogger(UserStorage.class);
-
-    private final List<Channel> channels = new ArrayList<>();
+    private static final Logger logger = LoggerFactory.getLogger(ActiveConnectionStorage.class);
 
     private final Map<String, Channel> connectionMap = new ConcurrentHashMap<>();
 
@@ -25,16 +21,13 @@ public class UserStorage {
         return connectionMap;
     }
 
-    private UserStorage() {
+    private ActiveConnectionStorage() {
     }
 
-    public List<Channel> getChannels() {
-        return channels;
-    }
 
-    public static UserStorage getInstance() {
+    public static ActiveConnectionStorage getInstance() {
         if (instance == null) {
-            instance = new UserStorage();
+            instance = new ActiveConnectionStorage();
         }
         return instance;
     }

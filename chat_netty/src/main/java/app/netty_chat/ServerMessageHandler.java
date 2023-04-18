@@ -1,6 +1,6 @@
 package app.netty_chat;
 
-import app.netty_chat.dao.UserStorage;
+import app.netty_chat.dao.ActiveConnectionStorage;
 import app.netty_chat.message.Message;
 import app.netty_chat.message.MessageType;
 import io.netty.channel.Channel;
@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
 
-    UserStorage userStorage = UserStorage.getInstance();
+    ActiveConnectionStorage activeConnectionStorage = ActiveConnectionStorage.getInstance();
 
     private static final Logger logger = LoggerFactory.getLogger(ServerMessageHandler.class);
 
@@ -24,7 +24,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     public void channelInactive(ChannelHandlerContext ctx) {
         // Notify clients when someone disconnects.
         logger.info("пользователь {} отключился {}", "[ИМЯ]", ctx.channel().remoteAddress());
-        logger.info("Список соединений\n{}", UserStorage.getInstance().toString());
+        logger.info("Список соединений\n{}", ActiveConnectionStorage.getInstance().toString());
         broadcastMessage(new Message(MessageType.USER_REMOVED,
                 "[SERVER] - " + ctx.channel().remoteAddress() + " покинул чат!"));
     }
@@ -33,7 +33,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     protected void channelRead0(ChannelHandlerContext ctx, Message msg)  {
         logger.debug("Пользователь {} прислал сообщение = {}", ctx.channel().remoteAddress(), msg.getMessage());
 //        broadcastMessage(msg);
-        for (Channel channel : userStorage.getConnectionMap().values()) {
+        for (Channel channel : activeConnectionStorage.getConnectionMap().values()) {
             if (channel != ctx.channel()) {
                 channel.writeAndFlush(new Message(MessageType.TEXT,
                         "[" + ctx.channel().remoteAddress() + "] " + msg.getMessage() + "\n"));
@@ -47,9 +47,9 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause)  {
         logger.info("Ошибка  {}", cause.getMessage());
-        for (var channel : userStorage.getConnectionMap().entrySet()) {
+        for (var channel : activeConnectionStorage.getConnectionMap().entrySet()) {
             if (ctx.channel().equals(channel.getValue())) {
-                userStorage.removeUser(channel.getKey());
+                activeConnectionStorage.removeUser(channel.getKey());
             }
         }
         logger.info("ctx {}", ctx);
@@ -58,7 +58,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
 
     private void broadcastMessage(Message msg) {
         logger.info("[{}]",msg);
-        for (var channel : userStorage.getConnectionMap().values()) {
+        for (var channel : activeConnectionStorage.getConnectionMap().values()) {
             channel.writeAndFlush(msg);
             logger.info("channel = {}", channel);
         }
