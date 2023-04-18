@@ -3,7 +3,7 @@ package app.netty_chat.dao;
 import java.io.Serializable;
 import java.util.Objects;
 
-public class User implements Serializable {
+public class User implements Serializable, Comparable<User> {
 
     private final String userName;
     private String pass;
@@ -36,5 +36,10 @@ public class User implements Serializable {
     @Override
     public int hashCode() {
         return Objects.hash(userName);
+    }
+
+    @Override
+    public int compareTo(User o) {
+        return this.userName.compareTo(o.userName);
     }
 }

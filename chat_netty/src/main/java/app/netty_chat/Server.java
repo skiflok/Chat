@@ -1,5 +1,6 @@
 package app.netty_chat;
 
+import app.netty_chat.dao.UserStorage;
 import app.netty_chat.service.PropertiesLoader;
 
 
@@ -17,6 +18,7 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 
+import java.io.IOException;
 
 
 // TODO Добавить jackson или protobuf
@@ -33,14 +35,20 @@ public class Server {
     private static final Logger logger
             = LoggerFactory.getLogger(Server.class);
 
+    private final UserStorage userStorage = UserStorage.getInstance();
+
     private final int PORT;
     private final String HOST;
+
+    private final String filePathUsers;
 
     private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
 
     {
         PORT = Integer.parseInt(propertiesLoader.getProperty("server.port"));
         HOST = propertiesLoader.getProperty("server.host");
+        filePathUsers = propertiesLoader.getProperty("server.users");
+
     }
 
     public int getPORT() {
@@ -79,8 +87,18 @@ public class Server {
             f.channel().closeFuture().sync();
 
         } catch (Exception e) {
+            logger.error("Server was interrupted", e);
             e.printStackTrace();
         } finally {
+
+            // сохранение пользователей при остановке сервера
+            try {
+                userStorage.saveToFile(filePathUsers);
+            } catch (IOException e) {
+                logger.error("Failed to save user storage");
+            }
+
+
             workerGroup.shutdownGracefully();
             bossGroup.shutdownGracefully();
         }
