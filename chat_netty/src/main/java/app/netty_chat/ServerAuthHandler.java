@@ -3,6 +3,8 @@ package app.netty_chat;
 //TODO запрос пароля
 
 import app.netty_chat.dao.ActiveConnectionStorage;
+import app.netty_chat.dao.User;
+import app.netty_chat.dao.UserStorage;
 import app.netty_chat.exception.AuthorisationErrorException;
 import app.netty_chat.exception.NameAlreadyUseException;
 import app.netty_chat.message.Message;
@@ -59,6 +61,9 @@ public class ServerAuthHandler extends SimpleChannelInboundHandler<Message> {
         }
 
         ActiveConnectionStorage.getInstance().addUser(userName, channel);
+
+        //TODO перевести все на Юзеров
+        UserStorage.getInstance().addUser(new User(userName));
         channel.writeAndFlush(new Message(MessageType.NAME_ACCEPTED));
 
         ctx.pipeline().remove(this);

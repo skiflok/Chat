@@ -59,7 +59,22 @@ public class Server {
         return HOST;
     }
 
+
+
+
     public void run()  {
+
+        // добавляем хук для сохранения пользователей при остановке сервера
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                logger.info("Сохранение юзеров в {}", filePathUsers);
+                userStorage.saveToFile(filePathUsers);
+            } catch (IOException e) {
+                logger.error("Failed to save user storage");
+            }
+        }));
+
+
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup workerGroup = new NioEventLoopGroup();
 
@@ -74,8 +89,8 @@ public class Server {
                         protected void initChannel(SocketChannel socketChannel)  {
                             socketChannel.pipeline().addLast(
                                     new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                                    new ObjectEncoder(),
-                                    new ServerAuthHandler()
+                                    new ServerAuthHandler(),
+                                    new ObjectEncoder()
                             );
                         }
                     })
@@ -90,9 +105,11 @@ public class Server {
             logger.error("Server was interrupted", e);
             e.printStackTrace();
         } finally {
+            logger.info("finally");
 
             // сохранение пользователей при остановке сервера
             try {
+                logger.info("Сохранение юзеров в {}", filePathUsers);
                 userStorage.saveToFile(filePathUsers);
             } catch (IOException e) {
                 logger.error("Failed to save user storage");
