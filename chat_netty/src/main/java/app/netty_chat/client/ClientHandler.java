@@ -1,6 +1,6 @@
 package app.netty_chat.client;
 
-import app.netty_chat.ConsoleHelper;
+import app.netty_chat.service.ConsoleHelper;
 import app.netty_chat.message.Message;
 import app.netty_chat.message.MessageType;
 import io.netty.channel.Channel;

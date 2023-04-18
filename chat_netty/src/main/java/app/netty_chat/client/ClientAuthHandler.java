@@ -1,8 +1,8 @@
 package app.netty_chat.client;
 
-import app.netty_chat.*;
 import app.netty_chat.message.Message;
 import app.netty_chat.message.MessageType;
+import app.netty_chat.service.ConsoleHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;

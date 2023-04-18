@@ -1,4 +1,4 @@
-package app.netty_chat;
+package app.netty_chat.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
