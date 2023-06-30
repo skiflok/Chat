@@ -68,7 +68,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.example.Server</mainClass>
+              <mainClass>com.example.app.App</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
