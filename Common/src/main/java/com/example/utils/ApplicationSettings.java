@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 
 @Component
 @PropertySource("classpath:application.properties")
+@PropertySource("classpath:db.properties")
 @Getter
 public class ApplicationSettings {
 
@@ -17,5 +18,10 @@ public class ApplicationSettings {
   private String HOST;
   @Value("${server.users}")
   private String filePathUsers;
+
+  @Value("${db.init.schema.path}")
+  String schemaPath;
+  @Value("${db.init.data.path}")
+  String dataPath;
 
 }
