@@ -4,7 +4,7 @@ import com.example.message.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-public class JsonUtilJacksonImpl implements JsonUtil<Message>{
+public class JsonUtilJacksonMessageImpl implements JsonUtil<Message>{
 
   private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -14,7 +14,7 @@ public class JsonUtilJacksonImpl implements JsonUtil<Message>{
   }
 
   @Override
-  public Message StringToObject(String string) throws JsonProcessingException {
+  public Message stringToObject(String string) throws JsonProcessingException {
     return objectMapper.readValue(string, Message.class);
   }
 

@@ -7,13 +7,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
-class JsonUtilJacksonImplTest {
+class JsonUtilJacksonMessageImplTest {
 
   private final Message message =  new Message(MessageType.TEXT, "Hello", "User");
   private final String testString = "{\"messageType\":\"TEXT\",\"message\":\"Hello\",\"userName\":\"User\"}";
-  private final JsonUtil<Message> jsonUtil = new JsonUtilJacksonImpl();
+  private final JsonUtil<Message> jsonUtil = new JsonUtilJacksonMessageImpl();
 
-  JsonUtilJacksonImplTest() {
+  JsonUtilJacksonMessageImplTest() {
   }
 
 
@@ -26,7 +26,7 @@ class JsonUtilJacksonImplTest {
 
   @Test
   void stringToObject() throws JsonProcessingException {
-    Message messageResult = jsonUtil.StringToObject(testString);
+    Message messageResult = jsonUtil.stringToObject(testString);
     System.out.println(messageResult);
     assertEquals(MessageType.TEXT, messageResult.getMessageType());
     assertEquals("Hello", messageResult.getMessage());

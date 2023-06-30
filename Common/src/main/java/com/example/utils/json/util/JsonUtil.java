@@ -5,6 +5,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 public interface JsonUtil <T>  {
 
   String objectToString (T object) throws JsonProcessingException;
-  T StringToObject (String string) throws JsonProcessingException;
+  T stringToObject (String string) throws JsonProcessingException;
 
 }

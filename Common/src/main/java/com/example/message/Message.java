@@ -2,8 +2,10 @@ package com.example.message;
 
 import java.io.Serializable;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @NoArgsConstructor
+@ToString
 public class Message implements Serializable {
 
     private MessageType messageType;
