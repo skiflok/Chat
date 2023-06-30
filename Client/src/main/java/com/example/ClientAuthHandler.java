@@ -24,17 +24,17 @@ public class ClientAuthHandler extends SimpleChannelInboundHandler<String> {
   protected void channelRead0(ChannelHandlerContext ctx, String incomeMsg)
       throws JsonProcessingException {
 
-    logger.info(incomeMsg);
+    logger.debug(incomeMsg);
 
     Message msg = jsonUtil.stringToObject(incomeMsg);
 
-    logger.info("msg {}", msg.toString());
+    logger.debug("msg {}", msg.toString());
 
-    logger.info(String.format("Тип сообщения %s ", msg.getMessageType()));
+    logger.debug(String.format("Тип сообщения %s ", msg.getMessageType()));
 
     switch (msg.getMessageType()) {
       case NAME_REQUEST -> {
-        logger.info(
+        logger.debug(
             String.format("%s. %s", msg.getMessageType().getMsg(), msg.getMessage()));
         ConsoleHelper.writeMessage(
             String.format("[Сервер] : %s %s", msg.getMessageType().getMsg(),
