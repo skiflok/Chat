@@ -1,7 +1,7 @@
 package com.example;
 
 import com.example.dao.UserStorage;
-import com.example.service.PropertiesLoader;
+import com.example.utils.PropertiesLoader;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;

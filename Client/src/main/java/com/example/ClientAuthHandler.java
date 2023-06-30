@@ -2,7 +2,7 @@ package com.example;
 
 import com.example.message.Message;
 import com.example.message.MessageType;
-import com.example.service.ConsoleHelper;
+import com.example.utils.ConsoleHelper;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import java.io.IOException;

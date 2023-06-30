@@ -1,7 +1,7 @@
 package com.example;
 
 
-import com.example.service.PropertiesLoader;
+import com.example.utils.PropertiesLoader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
