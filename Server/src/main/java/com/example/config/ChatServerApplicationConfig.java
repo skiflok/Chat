@@ -7,6 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -14,7 +15,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @ComponentScan(basePackages = "com.example")
 @PropertySource("classpath:db.properties")
-public class SocketsApplicationConfig {
+public class ChatServerApplicationConfig {
 
     @Value("${db.url}")
     private String url;
@@ -45,6 +46,11 @@ public class SocketsApplicationConfig {
     @Bean
     public HikariDataSource hikariDataSource() {
         return new HikariDataSource(hikariConfig());
+    }
+
+    @Bean
+    NamedParameterJdbcTemplate namedParameterJdbcTemplate () {
+        return new NamedParameterJdbcTemplate(hikariDataSource());
     }
 
 }

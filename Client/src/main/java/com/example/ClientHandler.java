@@ -51,7 +51,7 @@ public class ClientHandler extends SimpleChannelInboundHandler<String> {
     }
 
     public void readMessageFromConsoleAndSendMessage() throws IOException {
-        logger.info(this.getClass().toString());
+        logger.debug(this.getClass().toString());
         while (true) {
             String line = ConsoleHelper.readString();
             if ("/exit".equals(line)) {
