@@ -1,6 +1,6 @@
 package com.example.dao;
 
-import com.example.service.PropertiesLoader;
+import com.example.utils.PropertiesLoader;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;

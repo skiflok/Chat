@@ -1,7 +1,7 @@
 package com.example;
 
 
-import com.example.service.PropertiesLoader;
+import com.example.utils.PropertiesLoader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -11,82 +11,81 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.serialization.ClassResolvers;
-import io.netty.handler.codec.serialization.ObjectDecoder;
-import io.netty.handler.codec.serialization.ObjectEncoder;
+import io.netty.handler.codec.string.StringDecoder;
+import io.netty.handler.codec.string.StringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class Client {
 
-    private static final Logger logger = LoggerFactory.getLogger(Client.class);
-    private final String HOST;
-    private final int PORT;
+  private static final Logger logger = LoggerFactory.getLogger(Client.class);
+  private final String HOST;
+  private final int PORT;
 
-    private Channel channel;
+  private Channel channel;
 
-    public void setChannel(Channel channel) {
-        this.channel = channel;
-    }
+  public void setChannel(Channel channel) {
+    this.channel = channel;
+  }
 
-    private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
+  private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
 
-    {
-        PORT = Integer.parseInt(propertiesLoader.getProperty("server.port"));
-        HOST = propertiesLoader.getProperty("server.host");
-    }
+  {
+    PORT = Integer.parseInt(propertiesLoader.getProperty("server.port"));
+    HOST = propertiesLoader.getProperty("server.host");
+  }
 
-    public String getHOST() {
-        return HOST;
-    }
+  public String getHOST() {
+    return HOST;
+  }
 
-    public int getPORT() {
-        return PORT;
-    }
+  public int getPORT() {
+    return PORT;
+  }
 
-    public void run() {
+  public void run() {
 
-        EventLoopGroup workerGroup = new NioEventLoopGroup();
+    EventLoopGroup workerGroup = new NioEventLoopGroup();
 
-        try {
-            Bootstrap b = new Bootstrap(); // (1)
-            b.group(workerGroup); // (2)
-            b.channel(NioSocketChannel.class); // (3)
-            b.option(ChannelOption.SO_KEEPALIVE, true); // (4)
-            b.handler(new ChannelInitializer<SocketChannel>() {
-                @Override
-                public void initChannel(SocketChannel ch)  {
+    try {
+      Bootstrap b = new Bootstrap(); // (1)
+      b.group(workerGroup); // (2)
+      b.channel(NioSocketChannel.class); // (3)
+      b.option(ChannelOption.SO_KEEPALIVE, true); // (4)
+      b.handler(new ChannelInitializer<SocketChannel>() {
+        @Override
+        public void initChannel(SocketChannel ch) {
 
-                    ch.pipeline().addLast(
-                            new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
-                            new ObjectEncoder(),
-                            new ClientAuthHandler()
-                    );
-                }
-            });
-
-            // Start the client.
-            ChannelFuture f = b.connect(HOST, PORT).sync(); // (5)
-            setChannel(f.channel());
-
-            logger.info("Клиент успешно запущен. HOST = {}, PORT = {}", this.getHOST(), this.getPORT());
-
-            f.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        } finally {
-            workerGroup.shutdownGracefully();
+          ch.pipeline().addLast(
+              new StringDecoder(),
+              new ClientAuthHandler(),
+              new StringEncoder()
+          );
         }
+      });
 
+      // Start the client.
+      ChannelFuture f = b.connect(HOST, PORT).sync(); // (5)
+      setChannel(f.channel());
 
+      logger.info("Клиент успешно запущен. HOST = {}, PORT = {}", this.getHOST(), this.getPORT());
+
+      f.channel().closeFuture().sync();
+    } catch (InterruptedException e) {
+      throw new RuntimeException(e);
+    } finally {
+      workerGroup.shutdownGracefully();
     }
 
-    public static void main(String[] args) {
 
-        Client client = new Client();
-        client.run();
+  }
 
-    }
+  public static void main(String[] args) {
+
+    Client client = new Client();
+    client.run();
+
+  }
 
 }
 

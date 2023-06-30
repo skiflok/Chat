@@ -1,5 +1,5 @@
 package com.example.exception;
 
-public class NameAlreadyUseException extends Exception{
+public class NameAlreadyUseException extends RuntimeException{
 
 }

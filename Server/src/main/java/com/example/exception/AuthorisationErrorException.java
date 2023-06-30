@@ -1,5 +1,5 @@
 package com.example.exception;
 
-public class AuthorisationErrorException extends Exception{
+public class AuthorisationErrorException extends RuntimeException{
 
 }

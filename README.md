@@ -27,6 +27,24 @@
 <li> Добавлен логгер Logback</li>
 </ol>
 
+</details>
+
+<details>
+<summary><span style="font-size: medium;"> v2.1.0</summary>
+<ol>  </ol>
+<p style="text-align: left;"><strong>Изменения:</strong></p>
+<ol>
+<li> Изменен механизм передачи сообщений с серрилизованнх объектов на строки с использованием JSON формата. Использована библиотека Jackson</li>
+</ol>
+
+
+</details>
+
+### Сборка и запуск начиная с версии v2.0.0:
+
+<details>
+<summary><span style="font-size: medium;"> v2.0.0 - vX.X.X</summary>
+
 <p style="text-align: left;"><strong>Сборка и запуск:</strong></p>
 
 <ol>
@@ -40,5 +58,4 @@
 <li><code>java -jar Server/target/Server-jar-with-dependencies.jar</code> - запуск сервера</li>
 <li><code>java -jar Client/target/Client-jar-with-dependencies.jar</code> - запуск клиента</li>
 </ol>
-
 </details>

@@ -3,13 +3,18 @@ package com.example;
 import com.example.dao.ActiveConnectionStorage;
 import com.example.message.Message;
 import com.example.message.MessageType;
+import com.example.utils.json.util.JsonUtil;
+import com.example.utils.json.util.JsonUtilJacksonMessageImpl;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
+public class ServerMessageHandler extends SimpleChannelInboundHandler<String> {
+
+    private final JsonUtil<Message> jsonUtil = new JsonUtilJacksonMessageImpl();
 
     ActiveConnectionStorage activeConnectionStorage = ActiveConnectionStorage.getInstance();
 
@@ -21,7 +26,7 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
+    public void channelInactive(ChannelHandlerContext ctx) throws JsonProcessingException {
         // Notify clients when someone disconnects.
         logger.info("пользователь {} отключился {}", "[ИМЯ]", ctx.channel().remoteAddress());
         logger.info("Список соединений\n{}", ActiveConnectionStorage.getInstance().toString());
@@ -30,16 +35,18 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, Message msg)  {
+    protected void channelRead0(ChannelHandlerContext ctx, String incomeMsg)
+        throws JsonProcessingException {
+        Message msg = jsonUtil.stringToObject(incomeMsg);
         logger.debug("Пользователь {} прислал сообщение = {}", ctx.channel().remoteAddress(), msg.getMessage());
 //        broadcastMessage(msg);
         for (Channel channel : activeConnectionStorage.getConnectionMap().values()) {
             if (channel != ctx.channel()) {
-                channel.writeAndFlush(new Message(MessageType.TEXT,
-                        "[" + ctx.channel().remoteAddress() + "] " + msg.getMessage() + "\n"));
+                channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT,
+                        "[" + ctx.channel().remoteAddress() + "] " + msg.getMessage() + "\n")));
             } else {
-                channel.writeAndFlush(new Message(MessageType.TEXT,
-                        "[you] " + msg.getMessage() + "\n"));
+                channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT,
+                        "[you] " + msg.getMessage() + "\n")));
             }
         }
     }
@@ -56,10 +63,12 @@ public class ServerMessageHandler extends SimpleChannelInboundHandler<Message> {
         ctx.close();
     }
 
-    private void broadcastMessage(Message msg) {
+    private void broadcastMessage(Message msg) throws JsonProcessingException {
         logger.info("[{}]",msg);
+        String sendMsg = jsonUtil.objectToString(msg);
+        logger.info(sendMsg);
         for (var channel : activeConnectionStorage.getConnectionMap().values()) {
-            channel.writeAndFlush(msg);
+            channel.writeAndFlush(sendMsg);
             logger.info("channel = {}", channel);
         }
     }

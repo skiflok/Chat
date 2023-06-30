@@ -1,4 +1,4 @@
-package com.example.service;
+package com.example.utils;
 
 import java.io.FileInputStream;
 import java.io.IOException;
