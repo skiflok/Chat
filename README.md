@@ -27,19 +27,6 @@
 <li> Добавлен логгер Logback</li>
 </ol>
 
-<p style="text-align: left;"><strong>Сборка и запуск:</strong></p>
-
-<ol>
-<li>Настройки проекта application.properties</li>
-<ul>
-<li>server.port - порт на котором работает сервер</li>
-<li>server.host - ip адрес сервера</li>
-<li>server.users - путь по которому будет проводится сохранение пользователей в файл </li>
-</ul>
-<li><code>mnv clean package</code> - сборка проекта</li>
-<li><code>java -jar Server/target/Server-jar-with-dependencies.jar</code> - запуск сервера</li>
-<li><code>java -jar Client/target/Client-jar-with-dependencies.jar</code> - запуск клиента</li>
-</ol>
 </details>
 
 <details>
@@ -48,8 +35,15 @@
 <p style="text-align: left;"><strong>Изменения:</strong></p>
 <ol>
 <li> Изменен механизм передачи сообщений с серрилизованнх объектов на строки с использованием JSON формата. Использована библиотека Jackson</li>
-
 </ol>
+
+
+</details>
+
+### Сборка и запуск начиная с версии v2.0.0:
+
+<details>
+<summary><span style="font-size: medium;"> v2.0.0 - vX.X.X</summary>
 
 <p style="text-align: left;"><strong>Сборка и запуск:</strong></p>
 
