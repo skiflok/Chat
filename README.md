@@ -37,8 +37,8 @@
 <li>server.users - путь по которому будет проводится сохранение пользователей в файл </li>
 </ul>
 <li><code>mnv clean package</code> - сборка проекта</li>
-<li><code>java -jar Server/target/</code> - запуск сервера</li>
-<li><code>java -jar Client/target/</code> - запуск клиента</li>
+<li><code>java -jar Server/target/Server-jar-with-dependencies.jar</code> - запуск сервера</li>
+<li><code>java -jar Client/target/Client-jar-with-dependencies.jar</code> - запуск клиента</li>
 </ol>
 
 </details>
