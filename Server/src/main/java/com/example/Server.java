@@ -1,6 +1,7 @@
 package com.example;
 
 import com.example.dao.UserStorage;
+import com.example.utils.ApplicationSettings;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -15,35 +16,27 @@ import java.io.IOException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 
 @Component
-@PropertySource("classpath:application.properties")
 @Getter
 public class Server {
 
+  @Autowired
+  private ApplicationSettings appSet;
   private static final Logger logger
       = LoggerFactory.getLogger(Server.class);
   private final UserStorage userStorage = UserStorage.getInstance();
-
-  @Value("${server.port}")
-  private int PORT;
-  @Value("${server.host}")
-  private String HOST;
-  @Value("${server.users}")
-  private String filePathUsers;
-
 
   public void start() {
 
     // добавляем хук для сохранения пользователей при остановке сервера
     Runtime.getRuntime().addShutdownHook(new Thread(() -> {
       try {
-        logger.info("Сохранение юзеров в {}", filePathUsers);
-        userStorage.saveToFile(filePathUsers);
+        logger.info("Сохранение юзеров в {}", appSet.getFilePathUsers());
+        userStorage.saveToFile(appSet.getFilePathUsers());
       } catch (IOException e) {
         logger.error("Failed to save user storage");
       }
@@ -71,8 +64,8 @@ public class Server {
           .option(ChannelOption.SO_BACKLOG, 128)          // (5)
           .childOption(ChannelOption.SO_KEEPALIVE, true); // (6)
 
-      ChannelFuture f = b.bind(HOST, PORT).sync(); // (7)
-      logger.info("Сервер успешно запущен. HOST = {}, PORT = {}", this.getHOST(), this.getPORT());
+      ChannelFuture f = b.bind(appSet.getHOST(), appSet.getPORT()).sync(); // (7)
+      logger.info("Сервер успешно запущен. HOST = {}, PORT = {}", appSet.getHOST(), appSet.getPORT());
       f.channel().closeFuture().sync();
 
     } catch (Exception e) {
@@ -83,8 +76,8 @@ public class Server {
 
       // сохранение пользователей при остановке сервера
       try {
-        logger.info("Сохранение юзеров в {}", filePathUsers);
-        userStorage.saveToFile(filePathUsers);
+        logger.info("Сохранение юзеров в {}", appSet.getFilePathUsers());
+        userStorage.saveToFile(appSet.getFilePathUsers());
       } catch (IOException e) {
         logger.error("Failed to save user storage");
       }
