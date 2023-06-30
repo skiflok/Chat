@@ -1,14 +1,14 @@
 package com.example.message;
 
 import java.io.Serializable;
+import lombok.NoArgsConstructor;
 
-
+@NoArgsConstructor
 public class Message implements Serializable {
 
-    private final MessageType messageType;
-    private final String message;
-
-    private final String userName;
+    private MessageType messageType;
+    private String message;
+    private String userName;
 
     public Message(MessageType messageType) {
         this.messageType = messageType;
