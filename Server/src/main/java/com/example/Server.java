@@ -1,7 +1,6 @@
 package com.example;
 
 import com.example.dao.UserStorage;
-import com.example.utils.PropertiesLoader;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
@@ -13,37 +12,29 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import java.io.IOException;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.stereotype.Component;
 
+
+@Component
+@PropertySource("classpath:application.properties")
+@Getter
 public class Server {
 
   private static final Logger logger
       = LoggerFactory.getLogger(Server.class);
-
   private final UserStorage userStorage = UserStorage.getInstance();
 
-  private final int PORT;
-  private final String HOST;
-
-  private final String filePathUsers;
-
-  private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
-
-  {
-    PORT = Integer.parseInt(propertiesLoader.getProperty("server.port"));
-    HOST = propertiesLoader.getProperty("server.host");
-    filePathUsers = propertiesLoader.getProperty("server.users");
-
-  }
-
-  public int getPORT() {
-    return PORT;
-  }
-
-  public String getHOST() {
-    return HOST;
-  }
+  @Value("${server.port}")
+  private int PORT;
+  @Value("${server.host}")
+  private String HOST;
+  @Value("${server.users}")
+  private String filePathUsers;
 
 
   public void start() {

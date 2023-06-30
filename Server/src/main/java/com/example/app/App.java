@@ -20,7 +20,7 @@ public class App {
       ApplicationContext ctx = new AnnotationConfigApplicationContext(
           ChatServerApplicationConfig.class);
       ctx.getBean("dataBaseInitializer", DataBaseInitializer.class).init();
-      Server server = new Server();
+      Server server = ctx.getBean("server", Server.class);
       server.start();
     } catch (Exception e) {
       logger.warn("Произошла ошибка при запуске или работе сервера {}", e.getMessage());
