@@ -1,14 +1,14 @@
-package app;
+package com.example.service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ConsoleHelper {
 
-    private static final Logger logger = Logger.getLogger(ConsoleHelper.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(ConsoleHelper.class);
 
     static private final BufferedReader bis =
             new BufferedReader(new InputStreamReader(System.in));
@@ -24,8 +24,7 @@ public class ConsoleHelper {
                 if (buf != null)
                     return buf;
             } catch (IOException e) {
-                logger.log(Level.SEVERE, "Произошла ошибка при попытке ввода текста.");
-                writeMessage("Произошла ошибка при попытке ввода текста. Попробуйте еще раз.");
+                logger.warn("Произошла ошибка при попытке ввода текста.");
             }
         }
     }
@@ -35,8 +34,7 @@ public class ConsoleHelper {
             try {
                 return Integer.parseInt(readString().trim());
             } catch (NumberFormatException e) {
-                logger.log(Level.SEVERE, "Произошла ошибка при попытке ввода текста {0}.", e.toString());
-                writeMessage("Произошла ошибка при попытке ввода текста. Попробуйте еще раз.");
+                logger.warn("Произошла ошибка при попытке ввода текста {}.", e.toString());
             }
         }
     }

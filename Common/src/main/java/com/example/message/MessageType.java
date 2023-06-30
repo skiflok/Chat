@@ -1,4 +1,4 @@
-package app;
+package com.example.message;
 
 /**
  * - Когда новый клиент хочет подсоединиться к серверу, сервер должен запросить имя
@@ -12,10 +12,21 @@ package app;
  * остальным участникам чата.
  */
 public enum MessageType {
-  	NAME_REQUEST, // запрос имени
-	USER_NAME, // имя пользователя
-	NAME_ACCEPTED, // имя принято
-	TEXT, // текстовое сообщение
-	USER_ADDED, // пользователь добавлен
-	USER_REMOVED, // пользователь удален
+    NAME_REQUEST("Запрос авторизации. Введите имя."), // запрос имени
+    USER_NAME("Имя пользователя"), // имя пользователя
+    NAME_ACCEPTED("Имя принято"), // имя принято
+    TEXT("Текстовое сообщение"), // текстовое сообщение
+    USER_ADDED("Пользователь добавлен"), // пользователь добавлен
+    USER_REMOVED("Пользователь удален"); // пользователь удален
+
+    private final String msg;
+
+    MessageType(String msg) {
+        this.msg = msg;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
 }
