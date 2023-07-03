@@ -1,6 +1,6 @@
 package com.example.app;
 
-import com.example.Server;
+import com.example.server.Server;
 import com.example.config.ChatServerApplicationConfig;
 import com.example.repositories.utils.DataBaseInitializer;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.example;
+package com.example.server.handlers;
 
 //TODO запрос пароля
 

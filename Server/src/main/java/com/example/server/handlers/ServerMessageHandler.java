@@ -1,4 +1,4 @@
-package com.example;
+package com.example.server.handlers;
 
 import com.example.dao.ActiveConnectionStorage;
 import com.example.message.Message;

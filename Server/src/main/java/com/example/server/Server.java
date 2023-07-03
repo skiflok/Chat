@@ -1,6 +1,7 @@
-package com.example;
+package com.example.server;
 
 import com.example.dao.UserStorage;
+import com.example.server.handlers.ServerAuthHandler;
 import com.example.utils.ApplicationSettings;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
