@@ -2,6 +2,7 @@ package com.example.server;
 
 import com.example.dao.UserStorage;
 import com.example.server.handlers.ServerAuthHandler;
+import com.example.server.handlers.ServerHandler;
 import com.example.utils.ApplicationSettings;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -57,7 +58,8 @@ public class Server {
             protected void initChannel(SocketChannel socketChannel) {
               socketChannel.pipeline().addLast(
                   new StringDecoder(),
-                  new ServerAuthHandler(),
+//                  new ServerAuthHandler(),
+                  new ServerHandler(),
                   new StringEncoder()
               );
             }

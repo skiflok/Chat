@@ -1,4 +1,4 @@
-package com.example;
+package com.example.handlers;
 
 import com.example.message.Message;
 import com.example.message.MessageType;

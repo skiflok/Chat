@@ -1,6 +1,8 @@
 package com.example;
 
 
+import com.example.handlers.ClientAuthHandler;
+import com.example.handlers.ClientHandler_new;
 import com.example.utils.PropertiesLoader;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -58,7 +60,8 @@ public class Client {
 
           ch.pipeline().addLast(
               new StringDecoder(),
-              new ClientAuthHandler(),
+//              new ClientAuthHandler(),
+              new ClientHandler_new(),
               new StringEncoder()
           );
         }
