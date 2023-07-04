@@ -3,17 +3,27 @@ package com.example.server.handlers;
 import com.example.message.Message;
 import com.example.server.menu.ApplicationChatMenu;
 import com.example.utils.json.util.JsonUtil;
-import com.example.utils.json.util.JsonUtilJacksonMessageImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+
+@Component
+@Scope("prototype")
 public class ServerHandler extends SimpleChannelInboundHandler<String> {
+
+  @Autowired
+  private ApplicationContext applicationContext;
   private static final Logger logger = LoggerFactory.getLogger(ServerHandler.class);
-  private final JsonUtil<Message> jsonUtil = new JsonUtilJacksonMessageImpl();
+  @Autowired
+  private JsonUtil<Message> jsonUtil;
   private ApplicationChatMenu applicationChatMenu;
   private Channel channel;
 
@@ -27,7 +37,8 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
   public void channelActive(ChannelHandlerContext ctx) throws JsonProcessingException {
     logger.info("Попытка подключения {}, запрос на авторизацию", ctx.channel().remoteAddress());
     this.channel = ctx.channel();
-    applicationChatMenu = new ApplicationChatMenu(channel, jsonUtil);
+    applicationChatMenu = applicationContext.getBean("applicationChatMenu", ApplicationChatMenu.class);
+    applicationChatMenu.init(channel);
     applicationChatMenu.menu();
   }
 

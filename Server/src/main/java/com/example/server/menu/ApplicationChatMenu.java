@@ -3,6 +3,7 @@ package com.example.server.menu;
 import com.example.message.Message;
 import com.example.message.MessageType;
 import com.example.model.User;
+import com.example.repositories.userRepositories.UserRepository;
 import com.example.server.menu.command.Command;
 import com.example.server.menu.command.MenuCommandExecutor;
 import com.example.utils.json.util.JsonUtil;
@@ -13,26 +14,33 @@ import java.util.Optional;
 import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
+@Component
+@Scope("prototype")
 public class ApplicationChatMenu {
 
   private static final Logger logger = LoggerFactory.getLogger(ApplicationChatMenu.class);
-  private final JsonUtil<Message> jsonUtil;
-  private final MenuCommandExecutor commandExecutor;
+  @Autowired
+  private UserRepository userRepository;
+  @Autowired
+  private JsonUtil<Message> jsonUtil;
+
+  private MenuCommandExecutor commandExecutor;
 
   private MenuStage menuStage = MenuStage.MENU;
-
-  private final Channel channel;
+  private  Channel channel;
 
   private User user;
 
   Queue<Command> requestQueue = new LinkedList<>();
   Queue<String> answerQueue = new LinkedList<>();
 
-  public ApplicationChatMenu(Channel channel, JsonUtil<Message> jsonUtil) {
-    this.jsonUtil = jsonUtil;
+  public void init(Channel channel) {
     this.channel = channel;
-    commandExecutor = new MenuCommandExecutor(channel);
+    commandExecutor = new MenuCommandExecutor(channel, jsonUtil);
   }
 
   public void menu() throws JsonProcessingException {
@@ -104,23 +112,26 @@ public class ApplicationChatMenu {
       requestQueue.poll().execute();
     }
     if (answerQueue.size() == 2) {
+      logger.info(answerQueue.toString());
       String userName = answerQueue.poll();
       String userPassword = answerQueue.poll();
       if ("".equals(userName) || "".equals(userPassword)) {
         logger.info("null or empty");
         menuStage = MenuStage.MENU;
       } else {
-//        authenticationUser(new User(null, userName, userPassword));
+        authenticationUser(userName, userPassword);
         menuStage = MenuStage.ROOM_MENU;
       }
     }
-    logger.info(answerQueue.toString());
+
 
   }
 
-//  private void authenticationUser (User user) {
-//    Optional<User> optionalUserFromDB = usersRepository.findByName(userName);
-//  }
+  private void authenticationUser(String userName, String userPassword) {
+    Optional<User> optionalUserFromDB = userRepository.findByName(userName);
+    assert optionalUserFromDB.orElse(null) != null;
+    logger.info(optionalUserFromDB.orElse(null).toString());
+  }
 
   // todo
   // принимать соообщения изначально в меню

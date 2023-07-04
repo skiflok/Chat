@@ -2,7 +2,6 @@ package com.example.app;
 
 import com.example.server.Server;
 import com.example.config.ChatServerApplicationConfig;
-import com.example.repositories.utils.DataBaseInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -19,7 +18,7 @@ public class App {
     try {
       ApplicationContext ctx = new AnnotationConfigApplicationContext(
           ChatServerApplicationConfig.class);
-      ctx.getBean("dataBaseInitializer", DataBaseInitializer.class).init();
+//      ctx.getBean("dataBaseInitializer", DataBaseInitializer.class).init();
       Server server = ctx.getBean("server", Server.class);
       server.start();
     } catch (Exception e) {

@@ -3,7 +3,6 @@ package com.example.server.menu.command;
 import com.example.message.Message;
 import com.example.message.MessageType;
 import com.example.utils.json.util.JsonUtil;
-import com.example.utils.json.util.JsonUtilJacksonMessageImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.Channel;
 import java.util.HashMap;
@@ -17,7 +16,7 @@ public class MenuCommandExecutor {
   private static final Logger logger = LoggerFactory.getLogger(MenuCommandExecutor.class);
 
   private final Channel channel;
-  private final JsonUtil<Message> jsonUtil = new JsonUtilJacksonMessageImpl();
+  private final JsonUtil<Message> jsonUtil;
 
   private final HashMap<String, Command> commandMap = new HashMap<>();
 
