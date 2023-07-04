@@ -34,10 +34,11 @@ public class MenuCommandExecutor {
 
   {
     this.register("menu", this::menu);
+    this.register("roomMenu", this::roomMenu);
   }
 
 
-  public void menu() throws JsonProcessingException {
+  private void menu() throws JsonProcessingException {
     logger.info("");
     channel.writeAndFlush(jsonUtil.objectToString(new Message(
         MessageType.TEXT,
@@ -49,16 +50,14 @@ public class MenuCommandExecutor {
             3. exit""")));
   }
 
-  public void qwer() throws JsonProcessingException {
+  private void roomMenu() throws JsonProcessingException {
     logger.info("");
-    channel.writeAndFlush(jsonUtil.objectToString(new Message(
-        MessageType.TEXT,
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT,
         """
-            Hello from Server!
-            Available commands:
-            1. signIn
-            2. signUp
-            3. exit""")));
+            Room menu
+             1. Create room
+             2. Choose room
+             3. Exit""")));
   }
 
   public void userNameRequest() throws JsonProcessingException {

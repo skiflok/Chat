@@ -39,7 +39,6 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     this.channel = ctx.channel();
     applicationChatMenu = applicationContext.getBean("applicationChatMenu", ApplicationChatMenu.class);
     applicationChatMenu.init(channel);
-    applicationChatMenu.menu();
   }
 
   @Override

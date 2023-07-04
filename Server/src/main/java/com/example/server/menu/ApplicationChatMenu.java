@@ -31,20 +31,16 @@ public class ApplicationChatMenu {
   private MenuCommandExecutor commandExecutor;
 
   private MenuStage menuStage = MenuStage.MENU;
-  private  Channel channel;
+  private Channel channel;
 
   private User user;
 
   Queue<Command> requestQueue = new LinkedList<>();
   Queue<String> answerQueue = new LinkedList<>();
 
-  public void init(Channel channel) {
+  public void init(Channel channel) throws JsonProcessingException {
     this.channel = channel;
     commandExecutor = new MenuCommandExecutor(channel, jsonUtil);
-  }
-
-  public void menu() throws JsonProcessingException {
-    logger.info("");
     commandExecutor.execute("menu");
   }
 
@@ -59,7 +55,7 @@ public class ApplicationChatMenu {
       case MENU -> processMenuInput(msg.getMessage());
       case AUTHENTICATION -> authentication(msg.getMessage());
 //      case REGISTRATION -> processRegistrationInput(input);
-      case ROOM_MENU -> roomMenu();
+      case ROOM_MENU -> commandExecutor.execute("roomMenu");
 //      case CHAT -> processChatInput(input);
       default -> {
         logger.error("Некорректный статус меню: {}", menuStage);
@@ -94,12 +90,34 @@ public class ApplicationChatMenu {
     }
   }
 
-  private void roomMenu() throws JsonProcessingException {
-    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "ROOM MENU")));
+  private void processRoomMenuInput(String input) throws JsonProcessingException {
+    logger.info("");
+    switch (input) {
+      case "1":
+        createRoom();
+        break;
+      case "2":
+        chooseRoom();
+        break;
+      case "3":
+        menuStage = MenuStage.EXIT;
+        exit();
+      case "0":
+        return;
+      default:
+        logger.info("Некорректный ввод. Попробуйте снова.");
+    }
   }
 
+  public void createRoom() {
 
-  private void userRequest() {
+  }
+
+  public void chooseRoom() {
+
+  }
+
+  public void exit() {
 
   }
 
@@ -118,19 +136,27 @@ public class ApplicationChatMenu {
       if ("".equals(userName) || "".equals(userPassword)) {
         logger.info("null or empty");
         menuStage = MenuStage.MENU;
-      } else {
-        authenticationUser(userName, userPassword);
+        commandExecutor.execute("menu");
+        return;
+      }
+
+      Optional<User> optionalUserFromDB = userRepository.findByName(userName);
+      if (optionalUserFromDB.isPresent()) {
+        this.user = optionalUserFromDB.get();
         menuStage = MenuStage.ROOM_MENU;
+        commandExecutor.execute("roomMenu");
+      } else {
+        userNotRegister();
+        menuStage = MenuStage.MENU;
+        commandExecutor.execute("menu");
       }
     }
-
-
   }
 
-  private void authenticationUser(String userName, String userPassword) {
-    Optional<User> optionalUserFromDB = userRepository.findByName(userName);
-    assert optionalUserFromDB.orElse(null) != null;
-    logger.info(optionalUserFromDB.orElse(null).toString());
+  public void userNotRegister() throws JsonProcessingException {
+    channel.writeAndFlush(
+        jsonUtil.objectToString(new Message(MessageType.TEXT, "User not register")));
+    logger.info("User not register");
   }
 
   // todo
