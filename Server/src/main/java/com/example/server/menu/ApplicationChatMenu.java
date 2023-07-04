@@ -54,7 +54,7 @@ public class ApplicationChatMenu {
     switch (menuStage) {
       case MENU -> processMenuInput(msg.getMessage());
       case AUTHENTICATION -> authentication(msg.getMessage());
-//      case REGISTRATION -> processRegistrationInput(input);
+      case REGISTRATION -> registration(msg.getMessage());
       case ROOM_MENU -> commandExecutor.execute("roomMenu");
 //      case CHAT -> processChatInput(input);
       default -> {
@@ -77,8 +77,12 @@ public class ApplicationChatMenu {
         break;
       case "2":
         menuStage = MenuStage.REGISTRATION;
-        channel.writeAndFlush(
-            jsonUtil.objectToString(new Message(MessageType.TEXT, "REGISTRATION")));
+        if (requestQueue.isEmpty()) {
+          logger.info("requestQueue offer");
+          requestQueue.offer(commandExecutor::userNameRequest);
+          requestQueue.offer(commandExecutor::passwordRequest);
+        }
+        registration(input);
         break;
       case "3":
         menuStage = MenuStage.EXIT;
@@ -107,6 +111,44 @@ public class ApplicationChatMenu {
       default:
         logger.info("Некорректный ввод. Попробуйте снова.");
     }
+  }
+
+  public void registration(String input) throws JsonProcessingException {
+    logger.info("");
+    if (requestQueue.size() < 2) {
+      answerQueue.offer(input);
+    }
+    if (!requestQueue.isEmpty()) {
+      requestQueue.poll().execute();
+    }
+    if (answerQueue.size() == 2) {
+      logger.info(answerQueue.toString());
+      String userName = answerQueue.poll();
+      String userPassword = answerQueue.poll();
+      if ("".equals(userName) || "".equals(userPassword)) {
+        logger.info("null or empty");
+        menuStage = MenuStage.MENU;
+        commandExecutor.execute("menu");
+        return;
+      }
+      Optional<User> optionalUserFromDB = userRepository.findByName(userName);
+
+      if (optionalUserFromDB.isPresent()) {
+        userAlreadyRegister();
+      } else {
+        userRepository.save(new User(null, userName, userPassword));
+      }
+      menuStage = MenuStage.MENU;
+      commandExecutor.execute("menu");
+    }
+  }
+
+  public void userAlreadyRegister() throws JsonProcessingException {
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "user Already Register")));
+  }
+
+  public void registrationSuccess() {
+
   }
 
   public void createRoom() {
