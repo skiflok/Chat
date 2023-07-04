@@ -1,4 +1,4 @@
-package com.example.server.command;
+package com.example.server.menu.command;
 
 public class MenuCommandRealisation {
 

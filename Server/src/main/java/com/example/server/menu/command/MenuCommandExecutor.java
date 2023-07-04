@@ -1,8 +1,7 @@
-package com.example.server.command;
+package com.example.server.menu.command;
 
 import com.example.message.Message;
 import com.example.message.MessageType;
-import com.example.server.ApplicationChatMenu;
 import com.example.utils.json.util.JsonUtil;
 import com.example.utils.json.util.JsonUtilJacksonMessageImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -48,8 +47,27 @@ public class MenuCommandExecutor {
             Available commands:
             1. signIn
             2. signUp
-            3. exit
-            """)));
+            3. exit""")));
+  }
+
+  public void qwer() throws JsonProcessingException {
+    logger.info("");
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(
+        MessageType.TEXT,
+        """
+            Hello from Server!
+            Available commands:
+            1. signIn
+            2. signUp
+            3. exit""")));
+  }
+
+  public void userNameRequest() throws JsonProcessingException {
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "Enter username")));
+  }
+
+  public void passwordRequest() throws JsonProcessingException {
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "Enter password")));
   }
 
 

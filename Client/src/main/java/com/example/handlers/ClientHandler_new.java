@@ -34,7 +34,7 @@ public class ClientHandler_new extends SimpleChannelInboundHandler<String> {
 
       Message msg = jsonUtil.stringToObject(incomeMsg);
       logger.debug(String.format("Сообщение от сервера. ТИП %s ", msg.getMessageType()));
-      System.out.print(msg.getMessage());
+      System.out.println(msg.getMessage());
   }
 
   @Override
