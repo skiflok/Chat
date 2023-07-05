@@ -9,7 +9,9 @@ import com.example.server.menu.command.MenuCommandExecutor;
 import com.example.utils.json.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import org.slf4j.Logger;
@@ -27,19 +29,19 @@ public class ApplicationChatMenu {
   private UserRepository userRepository;
   @Autowired
   private JsonUtil<Message> jsonUtil;
-
   private MenuCommandExecutor commandExecutor;
 
   private MenuStage menuStage = MenuStage.MENU;
   private Channel channel;
-
+  private ChannelHandlerContext ctx;
   private User user;
 
   Queue<Command> requestQueue = new LinkedList<>();
   Queue<String> answerQueue = new LinkedList<>();
 
-  public void init(Channel channel) throws JsonProcessingException {
-    this.channel = channel;
+  public void init(ChannelHandlerContext ctx) throws JsonProcessingException {
+    this.ctx = ctx;
+    this.channel = ctx.channel();
     commandExecutor = new MenuCommandExecutor(channel, jsonUtil);
     commandExecutor.execute("menu");
   }
@@ -55,7 +57,8 @@ public class ApplicationChatMenu {
       case MENU -> processMenuInput(msg.getMessage());
       case AUTHENTICATION -> authentication(msg.getMessage());
       case REGISTRATION -> registration(msg.getMessage());
-      case ROOM_MENU -> commandExecutor.execute("roomMenu");
+      case ROOM_MENU -> processRoomMenuInput(msg.getMessage());
+      case CREATE_ROOM -> createRoom(msg.getMessage());
 //      case CHAT -> processChatInput(input);
       default -> {
         logger.error("Некорректный статус меню: {}", menuStage);
@@ -86,11 +89,12 @@ public class ApplicationChatMenu {
         break;
       case "3":
         menuStage = MenuStage.EXIT;
-        channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "EXIT")));
+        exit();
       case "0":
         return;
       default:
         logger.info("Некорректный ввод. Попробуйте снова.");
+        commandExecutor.execute("menu");
     }
   }
 
@@ -98,7 +102,11 @@ public class ApplicationChatMenu {
     logger.info("");
     switch (input) {
       case "1":
-        createRoom();
+        if (requestQueue.isEmpty()) {
+          logger.info("requestQueue offer");
+          requestQueue.offer(commandExecutor::roomNameRequest);
+        }
+        createRoom(input);
         break;
       case "2":
         chooseRoom();
@@ -110,6 +118,7 @@ public class ApplicationChatMenu {
         return;
       default:
         logger.info("Некорректный ввод. Попробуйте снова.");
+        commandExecutor.execute("roomMenu");
     }
   }
 
@@ -137,6 +146,7 @@ public class ApplicationChatMenu {
         userAlreadyRegister();
       } else {
         userRepository.save(new User(null, userName, userPassword));
+        registrationSuccess();
       }
       menuStage = MenuStage.MENU;
       commandExecutor.execute("menu");
@@ -144,14 +154,24 @@ public class ApplicationChatMenu {
   }
 
   public void userAlreadyRegister() throws JsonProcessingException {
-    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "user Already Register")));
+    channel.writeAndFlush(
+        jsonUtil.objectToString(new Message(MessageType.TEXT, "user Already Register")));
   }
 
-  public void registrationSuccess() {
-
+  public void registrationSuccess() throws JsonProcessingException {
+    sendMessage("Registration success");
   }
 
-  public void createRoom() {
+  public void createRoom(String input) throws JsonProcessingException {
+    if (requestQueue.isEmpty()) {
+      sendMessage("room created");
+
+      menuStage = MenuStage.ROOM_MENU;
+      commandExecutor.execute("roomMenu");
+      return;
+    }
+    Objects.requireNonNull(requestQueue.poll()).execute();
+    menuStage = MenuStage.CREATE_ROOM;
 
   }
 
@@ -159,8 +179,10 @@ public class ApplicationChatMenu {
 
   }
 
-  public void exit() {
-
+  public void exit() throws JsonProcessingException {
+    logger.info("EXIT {} ", channel.remoteAddress());
+    sendMessage("exit");
+    ctx.close();
   }
 
   private void authentication(String input) throws JsonProcessingException {
@@ -186,6 +208,7 @@ public class ApplicationChatMenu {
       if (optionalUserFromDB.isPresent()) {
         this.user = optionalUserFromDB.get();
         menuStage = MenuStage.ROOM_MENU;
+        sendMessage("authentication success! Hello " + user.getName());
         commandExecutor.execute("roomMenu");
       } else {
         userNotRegister();
@@ -199,6 +222,11 @@ public class ApplicationChatMenu {
     channel.writeAndFlush(
         jsonUtil.objectToString(new Message(MessageType.TEXT, "User not register")));
     logger.info("User not register");
+  }
+
+  public void sendMessage(String msgString) throws JsonProcessingException {
+    channel.writeAndFlush(
+        jsonUtil.objectToString(new Message(MessageType.TEXT, msgString)));
   }
 
   // todo

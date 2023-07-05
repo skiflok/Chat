@@ -43,8 +43,7 @@ public class MenuCommandExecutor {
     channel.writeAndFlush(jsonUtil.objectToString(new Message(
         MessageType.TEXT,
         """
-            Hello from Server!
-            Available commands:
+            Main menu commands:
             1. signIn
             2. signUp
             3. exit""")));
@@ -66,6 +65,10 @@ public class MenuCommandExecutor {
 
   public void passwordRequest() throws JsonProcessingException {
     channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "Enter password")));
+  }
+
+  public void roomNameRequest() throws JsonProcessingException {
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "Enter room name")));
   }
 
 

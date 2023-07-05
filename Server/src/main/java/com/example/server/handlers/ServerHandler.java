@@ -38,11 +38,12 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     logger.info("Попытка подключения {}, запрос на авторизацию", ctx.channel().remoteAddress());
     this.channel = ctx.channel();
     applicationChatMenu = applicationContext.getBean("applicationChatMenu", ApplicationChatMenu.class);
-    applicationChatMenu.init(channel);
+    applicationChatMenu.init(ctx);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    logger.info("Пользователь {} отключился", ctx.channel().remoteAddress());
     super.channelInactive(ctx);
   }
 
