@@ -12,33 +12,21 @@ import org.springframework.stereotype.Component;
 @Component
 public class ActiveConnectionStorage {
 
-  private static ActiveConnectionStorage instance = null;
-
   private static final Logger logger = LoggerFactory.getLogger(ActiveConnectionStorage.class);
-
   private final Map<String, Channel> connectionMap = new ConcurrentHashMap<>();
 
   public Map<String, Channel> getConnectionMap() {
     return connectionMap;
   }
 
-    public Collection<Channel> getConnectionList () {
-        return connectionMap.values();
-    }
-
-  private ActiveConnectionStorage() {
+  public Collection<Channel> getConnectionList() {
+    return connectionMap.values();
   }
 
-    public boolean contains(String userName) {
-        return connectionMap.containsKey(userName);
-    }
-
-  public static ActiveConnectionStorage getInstance() {
-    if (instance == null) {
-      instance = new ActiveConnectionStorage();
-    }
-    return instance;
+  public boolean contains(String userName) {
+    return connectionMap.containsKey(userName);
   }
+
 
   public void addUser(String userName, Channel channel) {
     //TODO

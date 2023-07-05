@@ -1,8 +1,12 @@
 package com.example.server.menu;
 
+import static com.example.message.MessageType.*;
+
+import com.example.dao.ActiveConnectionStorage;
 import com.example.message.Message;
-import com.example.message.MessageType;
+import com.example.model.Room;
 import com.example.model.User;
+import com.example.repositories.roomRepositories.RoomRepository;
 import com.example.repositories.userRepositories.UserRepository;
 import com.example.server.menu.command.Command;
 import com.example.server.menu.command.MenuCommandExecutor;
@@ -11,9 +15,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,8 +31,13 @@ import org.springframework.stereotype.Component;
 public class ApplicationChatMenu {
 
   private static final Logger logger = LoggerFactory.getLogger(ApplicationChatMenu.class);
+
+  @Autowired
+  ActiveConnectionStorage activeConnectionStorage;
   @Autowired
   private UserRepository userRepository;
+  @Autowired
+  private RoomRepository roomRepository;
   @Autowired
   private JsonUtil<Message> jsonUtil;
   private MenuCommandExecutor commandExecutor;
@@ -35,6 +46,11 @@ public class ApplicationChatMenu {
   private Channel channel;
   private ChannelHandlerContext ctx;
   private User user;
+  private int stage;
+  private long exitKey;
+  private List<Room> rooms;
+
+  private Room room;
 
   Queue<Command> requestQueue = new LinkedList<>();
   Queue<String> answerQueue = new LinkedList<>();
@@ -59,11 +75,16 @@ public class ApplicationChatMenu {
       case REGISTRATION -> registration(msg.getMessage());
       case ROOM_MENU -> processRoomMenuInput(msg.getMessage());
       case CREATE_ROOM -> createRoom(msg.getMessage());
-//      case CHAT -> processChatInput(input);
+      case CHOOSE_ROOM -> chooseRoom(msg.getMessage());
+      case CHAT -> processChat(msg.getMessage());
       default -> {
         logger.error("Некорректный статус меню: {}", menuStage);
       }
     }
+  }
+
+  private void processChat (String input) throws JsonProcessingException {
+    sendBroadcastMessage(String.format("[%s]: %s", user.getName(), input));
   }
 
   private void processMenuInput(String input) throws JsonProcessingException {
@@ -109,7 +130,7 @@ public class ApplicationChatMenu {
         createRoom(input);
         break;
       case "2":
-        chooseRoom();
+        chooseRoom(input);
         break;
       case "3":
         menuStage = MenuStage.EXIT;
@@ -155,7 +176,7 @@ public class ApplicationChatMenu {
 
   public void userAlreadyRegister() throws JsonProcessingException {
     channel.writeAndFlush(
-        jsonUtil.objectToString(new Message(MessageType.TEXT, "user Already Register")));
+        jsonUtil.objectToString(new Message(TEXT, "user Already Register")));
   }
 
   public void registrationSuccess() throws JsonProcessingException {
@@ -163,9 +184,24 @@ public class ApplicationChatMenu {
   }
 
   public void createRoom(String input) throws JsonProcessingException {
+    logger.info(input);
     if (requestQueue.isEmpty()) {
-      sendMessage("room created");
+      if (input.isEmpty()) {
+        sendMessage("room created failed: name is empty");
+        menuStage = MenuStage.ROOM_MENU;
+        commandExecutor.execute("roomMenu");
+        return;
+      }
+      if (roomRepository.findAll().stream()
+          .anyMatch(room -> input.equals(room.getName()))) {
+        sendMessage("this room already exist");
+        menuStage = MenuStage.ROOM_MENU;
+        commandExecutor.execute("roomMenu");
+        return;
+      }
 
+      roomRepository.save(new Room(null, input, user));
+      sendMessage("room created");
       menuStage = MenuStage.ROOM_MENU;
       commandExecutor.execute("roomMenu");
       return;
@@ -175,8 +211,47 @@ public class ApplicationChatMenu {
 
   }
 
-  public void chooseRoom() {
+  public void chooseRoom(String input) throws JsonProcessingException {
 
+    switch (stage) {
+
+      case 0 -> {
+        logger.info("stage {}", stage);
+        rooms = roomRepository.findAll();
+        final long[] maxId = new long[1];
+        String res = roomRepository.findAll().stream()
+            .map(room -> {
+              maxId[0] = room.getId();
+              return room.getId() + ". " + room.getName();
+            })
+            .collect(Collectors.joining("\n"));
+        res += "\n" + (maxId[0] + 1) + ". exit";
+        sendMessage(res);
+        exitKey = maxId[0];
+        stage++;
+        menuStage = MenuStage.CHOOSE_ROOM;
+      }
+      case 1 -> {
+        logger.info("stage {}", stage);
+        Optional<Room> room = rooms.stream()
+            .filter(r -> r.getId().toString().equals(input))
+            .findFirst();
+        if (room.isPresent()) {
+          this.room = room.get();
+          sendMessage("welcome to room" + this.room.getName());
+          activeConnectionStorage.addUser(user.getName(), channel);
+          menuStage = MenuStage.CHAT;
+        }
+        stage = 0;
+      }
+      default -> {
+        commandExecutor.execute("roomMenu");
+        menuStage = MenuStage.ROOM_MENU;
+      }
+
+    }
+
+    // todo проверки
   }
 
   public void exit() throws JsonProcessingException {
@@ -220,13 +295,28 @@ public class ApplicationChatMenu {
 
   public void userNotRegister() throws JsonProcessingException {
     channel.writeAndFlush(
-        jsonUtil.objectToString(new Message(MessageType.TEXT, "User not register")));
+        jsonUtil.objectToString(new Message(TEXT, "User not register")));
     logger.info("User not register");
   }
 
   public void sendMessage(String msgString) throws JsonProcessingException {
     channel.writeAndFlush(
-        jsonUtil.objectToString(new Message(MessageType.TEXT, msgString)));
+        jsonUtil.objectToString(new Message(TEXT, msgString)));
+  }
+
+  public void sendBroadcastMessage(String income) throws JsonProcessingException {
+    for (Channel channel : activeConnectionStorage.getConnectionList()) {
+      channel.writeAndFlush(jsonUtil.objectToString(new Message(TEXT, income)));
+//      try {
+//        logger.info("this.room {} name {}", room, room.getName());
+//        logger.info("connection.room {} name {}", connection.getRoom(), connection.getRoom().getName());
+//        if (this.room.getName().equals(connection.getRoom().getName())) {
+//          connection.send(message);
+//        }
+//      } catch (IOException e) {
+//        logger.info("Не смогли отправить сообщение {}", e.getMessage());
+//      }
+    }
   }
 
   // todo

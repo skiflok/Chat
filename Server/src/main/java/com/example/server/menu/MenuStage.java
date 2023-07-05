@@ -7,5 +7,5 @@ public enum MenuStage {
   ROOM_MENU,
   CHAT,
   EXIT,
-  CREATE_ROOM, ROOM
+  CREATE_ROOM, CHOOSE_ROOM, ROOM
 }
