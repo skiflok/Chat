@@ -2,6 +2,7 @@ package com.example.server.menu;
 
 import static com.example.model.message.MessageType.*;
 
+import com.example.repositories.messageRepositories.MessageRepository;
 import com.example.server.connection.ActiveConnectionStorage;
 import com.example.model.message.Message;
 import com.example.model.Room;
@@ -16,6 +17,7 @@ import com.example.utils.json.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -42,6 +44,8 @@ public class ApplicationChatMenu {
   private RoomRepository roomRepository;
   @Autowired
   private UsersService usersService;
+  @Autowired
+  private MessageRepository messageRepository;
   @Autowired
   private JsonUtil<Message> jsonUtil;
 
@@ -248,8 +252,9 @@ public class ApplicationChatMenu {
             .findFirst();
         if (room.isPresent()) {
           this.room = room.get();
-          sendMessage("welcome to room" + this.room.getName());
+          sendMessage("welcome to room " + this.room.getName());
           activeConnectionStorage.addUser(user.getName(), channel, this.room.getName());
+          sendLast30MsgFromRoom();
           menuStage = MenuStage.CHAT;
         }
         stage = 0;
@@ -262,6 +267,19 @@ public class ApplicationChatMenu {
     // todo проверки
   }
 
+  public void sendLast30MsgFromRoom() {
+    logger.info("sendLast30MsgFromRoom | room id = {}", room.getId());
+    messageRepository.findLast30(room.getId())
+        .forEach(message -> {
+          try {
+            logger.info(message.toString());
+            sendMessage(String.format("[%s]: %s", message.getUser().getName(), message.getMessage()));
+          } catch (JsonProcessingException e) {
+            logger.warn(e.getMessage());
+            throw new RuntimeException(e);
+          }
+        });
+  }
   public void exit() throws JsonProcessingException {
     logger.info("EXIT {} ", channel.remoteAddress());
     sendMessage("exit");
@@ -314,6 +332,7 @@ public class ApplicationChatMenu {
   }
 
   public void sendBroadcastMessage(String income) throws JsonProcessingException {
+    messageRepository.save(new Message(null, user, room, income, LocalDateTime.now()));
     for (Connection connection : activeConnectionStorage.getConnectionList()) {
       if (this.room.getName().equals(connection.getRoomName())) {
         connection.getChannel().writeAndFlush(jsonUtil.objectToString(
