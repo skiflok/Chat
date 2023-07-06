@@ -1,6 +1,8 @@
 package com.example.server.handlers;
 
 import com.example.message.Message;
+import com.example.model.User;
+import com.example.server.connection.ActiveConnectionStorage;
 import com.example.server.menu.ApplicationChatMenu;
 import com.example.utils.json.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,18 +16,23 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
-
 @Component
 @Scope("prototype")
 public class ServerHandler extends SimpleChannelInboundHandler<String> {
 
   @Autowired
   private ApplicationContext applicationContext;
-  private static final Logger logger = LoggerFactory.getLogger(ServerHandler.class);
+
   @Autowired
   private JsonUtil<Message> jsonUtil;
+
+  @Autowired
+  private ActiveConnectionStorage activeConnectionStorage;
+  private static final Logger logger = LoggerFactory.getLogger(ServerHandler.class);
   private ApplicationChatMenu applicationChatMenu;
   private Channel channel;
+
+  private User user;
 
   @Override
   protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
@@ -38,12 +45,13 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
     logger.info("Попытка подключения {}, запрос на авторизацию", ctx.channel().remoteAddress());
     this.channel = ctx.channel();
     applicationChatMenu = applicationContext.getBean("applicationChatMenu", ApplicationChatMenu.class);
-    applicationChatMenu.init(ctx);
+    applicationChatMenu.init(ctx, user);
   }
 
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     logger.info("Пользователь {} отключился", ctx.channel().remoteAddress());
+    activeConnectionStorage.removeUser(user.getName());
     super.channelInactive(ctx);
   }
 

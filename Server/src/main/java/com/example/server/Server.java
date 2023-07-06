@@ -1,6 +1,5 @@
 package com.example.server;
 
-import com.example.dao.UserStorage;
 import com.example.utils.ApplicationSettings;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -8,14 +7,12 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import java.io.IOException;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
-
 
 @Component
 @Getter
@@ -27,19 +24,8 @@ public class Server {
   private ApplicationContext applicationContext;
   private static final Logger logger
       = LoggerFactory.getLogger(Server.class);
-  private final UserStorage userStorage = UserStorage.getInstance();
 
   public void start() {
-
-    // добавляем хук для сохранения пользователей при остановке сервера
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      try {
-        logger.info("Сохранение юзеров в {}", appSet.getFilePathUsers());
-        userStorage.saveToFile(appSet.getFilePathUsers());
-      } catch (IOException e) {
-        logger.error("Failed to save user storage");
-      }
-    }));
 
     EventLoopGroup bossGroup = new NioEventLoopGroup();
     EventLoopGroup workerGroup = new NioEventLoopGroup();
@@ -62,14 +48,6 @@ public class Server {
       e.printStackTrace();
     } finally {
       logger.info("finally");
-
-      // сохранение пользователей при остановке сервера
-      try {
-        logger.info("Сохранение юзеров в {}", appSet.getFilePathUsers());
-        userStorage.saveToFile(appSet.getFilePathUsers());
-      } catch (IOException e) {
-        logger.error("Failed to save user storage");
-      }
 
       workerGroup.shutdownGracefully();
       bossGroup.shutdownGracefully();

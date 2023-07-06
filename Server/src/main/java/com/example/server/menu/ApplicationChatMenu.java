@@ -2,12 +2,13 @@ package com.example.server.menu;
 
 import static com.example.message.MessageType.*;
 
-import com.example.dao.ActiveConnectionStorage;
+import com.example.server.connection.ActiveConnectionStorage;
 import com.example.message.Message;
 import com.example.model.Room;
 import com.example.model.User;
 import com.example.repositories.roomRepositories.RoomRepository;
 import com.example.repositories.userRepositories.UserRepository;
+import com.example.server.connection.Connection;
 import com.example.server.menu.command.Command;
 import com.example.server.menu.command.MenuCommandExecutor;
 import com.example.utils.json.util.JsonUtil;
@@ -55,8 +56,9 @@ public class ApplicationChatMenu {
   Queue<Command> requestQueue = new LinkedList<>();
   Queue<String> answerQueue = new LinkedList<>();
 
-  public void init(ChannelHandlerContext ctx) throws JsonProcessingException {
+  public void init(ChannelHandlerContext ctx, User user) throws JsonProcessingException {
     this.ctx = ctx;
+    this.user = user;
     this.channel = ctx.channel();
     commandExecutor = new MenuCommandExecutor(channel, jsonUtil);
     commandExecutor.execute("menu");
@@ -83,8 +85,12 @@ public class ApplicationChatMenu {
     }
   }
 
-  private void processChat (String input) throws JsonProcessingException {
-    sendBroadcastMessage(String.format("[%s]: %s", user.getName(), input));
+  private void processChat(String input) throws JsonProcessingException {
+    if ("exit".equals(input)) {
+      exit();
+      return;
+    }
+    sendBroadcastMessage(input);
   }
 
   private void processMenuInput(String input) throws JsonProcessingException {
@@ -239,7 +245,7 @@ public class ApplicationChatMenu {
         if (room.isPresent()) {
           this.room = room.get();
           sendMessage("welcome to room" + this.room.getName());
-          activeConnectionStorage.addUser(user.getName(), channel);
+          activeConnectionStorage.addUser(user.getName(), channel, this.room.getName());
           menuStage = MenuStage.CHAT;
         }
         stage = 0;
@@ -305,23 +311,11 @@ public class ApplicationChatMenu {
   }
 
   public void sendBroadcastMessage(String income) throws JsonProcessingException {
-    for (Channel channel : activeConnectionStorage.getConnectionList()) {
-      channel.writeAndFlush(jsonUtil.objectToString(new Message(TEXT, income)));
-//      try {
-//        logger.info("this.room {} name {}", room, room.getName());
-//        logger.info("connection.room {} name {}", connection.getRoom(), connection.getRoom().getName());
-//        if (this.room.getName().equals(connection.getRoom().getName())) {
-//          connection.send(message);
-//        }
-//      } catch (IOException e) {
-//        logger.info("Не смогли отправить сообщение {}", e.getMessage());
-//      }
+    for (Connection connection : activeConnectionStorage.getConnectionList()) {
+      if (this.room.getName().equals(connection.getRoomName())) {
+        connection.getChannel().writeAndFlush(jsonUtil.objectToString(
+            new Message(TEXT, String.format("[%s]: %s", user.getName(), income))));
+      }
     }
   }
-
-  // todo
-  // принимать соообщения изначально в меню
-  // сделать енам на местонахождение в меню МЕНЮ КОМНАТЫ ЧАТИК и ТД
-  // менять енам и обработчик при выборе пользователя
-
 }

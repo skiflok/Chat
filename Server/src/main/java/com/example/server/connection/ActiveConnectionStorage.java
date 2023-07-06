@@ -1,4 +1,4 @@
-package com.example.dao;
+package com.example.server.connection;
 
 import io.netty.channel.Channel;
 import java.util.Collection;
@@ -13,13 +13,14 @@ import org.springframework.stereotype.Component;
 public class ActiveConnectionStorage {
 
   private static final Logger logger = LoggerFactory.getLogger(ActiveConnectionStorage.class);
-  private final Map<String, Channel> connectionMap = new ConcurrentHashMap<>();
+  private final Map<String, Connection> connectionMap = new ConcurrentHashMap<>();
 
-  public Map<String, Channel> getConnectionMap() {
-    return connectionMap;
+  public Collection<Channel> getChannelList() {
+    return connectionMap.values().stream()
+        .map(Connection::getChannel).toList();
   }
 
-  public Collection<Channel> getConnectionList() {
+  public Collection<Connection> getConnectionList() {
     return connectionMap.values();
   }
 
@@ -27,15 +28,23 @@ public class ActiveConnectionStorage {
     return connectionMap.containsKey(userName);
   }
 
-
   public void addUser(String userName, Channel channel) {
     //TODO
-    connectionMap.put(userName, channel);
+    connectionMap.put(userName, new Connection(channel));
+  }
+
+  public void addUser(String userName, Channel channel, String roomName) {
+    //TODO
+    connectionMap.put(userName, new Connection(channel, roomName));
   }
 
   public void removeUser(String userName) {
     //TODO
     connectionMap.remove(userName);
+  }
+
+  public void setRoom(String userName, String roomNane) {
+    connectionMap.get(userName).setRoomName(roomNane);
   }
 
 }
