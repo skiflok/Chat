@@ -51,7 +51,9 @@ public class ServerHandler extends SimpleChannelInboundHandler<String> {
   @Override
   public void channelInactive(ChannelHandlerContext ctx) throws Exception {
     logger.info("Пользователь {} отключился", ctx.channel().remoteAddress());
-    activeConnectionStorage.removeUser(user.getName());
+    if (user != null) {
+      activeConnectionStorage.removeUser(user.getName());
+    }
     super.channelInactive(ctx);
   }
 

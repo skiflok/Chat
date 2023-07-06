@@ -265,6 +265,7 @@ public class ApplicationChatMenu {
   public void exit() throws JsonProcessingException {
     logger.info("EXIT {} ", channel.remoteAddress());
     sendMessage("exit");
+    ctx.disconnect();
     ctx.close();
   }
 
