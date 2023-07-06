@@ -11,6 +11,7 @@ import com.example.repositories.userRepositories.UserRepository;
 import com.example.server.connection.Connection;
 import com.example.server.menu.command.Command;
 import com.example.server.menu.command.MenuCommandExecutor;
+import com.example.services.UsersService;
 import com.example.utils.json.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.Channel;
@@ -40,7 +41,10 @@ public class ApplicationChatMenu {
   @Autowired
   private RoomRepository roomRepository;
   @Autowired
+  private UsersService usersService;
+  @Autowired
   private JsonUtil<Message> jsonUtil;
+
   private MenuCommandExecutor commandExecutor;
 
   private MenuStage menuStage = MenuStage.MENU;
@@ -65,7 +69,6 @@ public class ApplicationChatMenu {
   }
 
   public void messageHandler(String incomeMsg) throws JsonProcessingException {
-//    channel.writeAndFlush(incomeMsg + "\n");
 
     logger.info(menuStage.toString());
 
@@ -172,7 +175,8 @@ public class ApplicationChatMenu {
       if (optionalUserFromDB.isPresent()) {
         userAlreadyRegister();
       } else {
-        userRepository.save(new User(null, userName, userPassword));
+//        userRepository.save(new User(null, userName, userPassword));
+        usersService.signUp(new User(null, userName, userPassword));
         registrationSuccess();
       }
       menuStage = MenuStage.MENU;
