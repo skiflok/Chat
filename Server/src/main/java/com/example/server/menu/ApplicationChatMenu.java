@@ -254,9 +254,7 @@ public class ApplicationChatMenu {
         commandExecutor.execute("roomMenu");
         menuStage = MenuStage.ROOM_MENU;
       }
-
     }
-
     // todo проверки
   }
 
