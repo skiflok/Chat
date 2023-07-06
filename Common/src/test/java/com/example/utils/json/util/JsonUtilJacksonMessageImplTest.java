@@ -1,7 +1,7 @@
 package com.example.utils.json.util;
 
-import com.example.message.Message;
-import com.example.message.MessageType;
+import com.example.model.message.Message;
+import com.example.model.message.MessageType;
 import com.fasterxml.jackson.core.JsonProcessingException;
 
 import org.junit.jupiter.api.Test;
@@ -9,8 +9,8 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class JsonUtilJacksonMessageImplTest {
 
-  private final Message message =  new Message(MessageType.TEXT, "Hello", "User");
-  private final String testString = "{\"messageType\":\"TEXT\",\"message\":\"Hello\",\"userName\":\"User\"}";
+  private final Message message =  new Message(MessageType.TEXT, "Hello");
+  private final String testString = "{\"messageType\":\"TEXT\",\"message\":\"Hello\"}";
   private final JsonUtil<Message> jsonUtil = new JsonUtilJacksonMessageImpl();
 
   JsonUtilJacksonMessageImplTest() {
@@ -30,6 +30,5 @@ class JsonUtilJacksonMessageImplTest {
     System.out.println(messageResult);
     assertEquals(MessageType.TEXT, messageResult.getMessageType());
     assertEquals("Hello", messageResult.getMessage());
-    assertEquals("User", messageResult.getUserName());
   }
 }

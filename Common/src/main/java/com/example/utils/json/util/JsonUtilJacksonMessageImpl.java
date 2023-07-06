@@ -1,6 +1,6 @@
 package com.example.utils.json.util;
 
-import com.example.message.Message;
+import com.example.model.message.Message;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;

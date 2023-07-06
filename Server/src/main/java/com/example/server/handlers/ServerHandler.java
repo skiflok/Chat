@@ -1,6 +1,6 @@
 package com.example.server.handlers;
 
-import com.example.message.Message;
+import com.example.model.message.Message;
 import com.example.model.User;
 import com.example.server.connection.ActiveConnectionStorage;
 import com.example.server.menu.ApplicationChatMenu;

@@ -1,9 +1,9 @@
 package com.example.server.menu;
 
-import static com.example.message.MessageType.*;
+import static com.example.model.message.MessageType.*;
 
 import com.example.server.connection.ActiveConnectionStorage;
-import com.example.message.Message;
+import com.example.model.message.Message;
 import com.example.model.Room;
 import com.example.model.User;
 import com.example.repositories.roomRepositories.RoomRepository;

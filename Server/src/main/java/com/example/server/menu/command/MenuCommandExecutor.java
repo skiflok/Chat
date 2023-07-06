@@ -1,7 +1,7 @@
 package com.example.server.menu.command;
 
-import com.example.message.Message;
-import com.example.message.MessageType;
+import com.example.model.message.Message;
+import com.example.model.message.MessageType;
 import com.example.utils.json.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.netty.channel.Channel;

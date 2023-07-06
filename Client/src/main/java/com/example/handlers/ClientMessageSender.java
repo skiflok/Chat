@@ -1,7 +1,7 @@
 package com.example.handlers;
 
-import com.example.message.Message;
-import com.example.message.MessageType;
+import com.example.model.message.Message;
+import com.example.model.message.MessageType;
 import com.example.utils.ConsoleHelper;
 import com.example.utils.json.util.JsonUtil;
 import com.example.utils.json.util.JsonUtilJacksonMessageImpl;
@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 @RequiredArgsConstructor
 public class ClientMessageSender implements Runnable{
 
-  private static final Logger logger = LoggerFactory.getLogger(ClientHandler.class);
+  private static final Logger logger = LoggerFactory.getLogger(ClientMessageSender.class);
   private final JsonUtil<Message> jsonUtil = new JsonUtilJacksonMessageImpl();
 
   @Setter
