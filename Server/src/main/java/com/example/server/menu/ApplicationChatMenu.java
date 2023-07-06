@@ -135,24 +135,13 @@ public class ApplicationChatMenu {
   private void processRoomMenuInput(String input) throws JsonProcessingException {
     logger.info("");
     switch (input) {
-      case "1":
-        if (requestQueue.isEmpty()) {
-          logger.info("requestQueue offer");
-          requestQueue.offer(commandExecutor::roomNameRequest);
-        }
-        createRoom(input);
-        break;
-      case "2":
-        chooseRoom(input);
-        break;
-      case "3":
-        menuStage = MenuStage.EXIT;
-        exit();
-      case "0":
-        return;
-      default:
+      case "1" -> createRoom(input);
+      case "2" -> chooseRoom(input);
+      case "3" -> exit();
+      default -> {
         logger.info("Некорректный ввод. Попробуйте снова.");
         commandExecutor.execute("roomMenu");
+      }
     }
   }
 
@@ -198,31 +187,37 @@ public class ApplicationChatMenu {
   }
 
   public void createRoom(String input) throws JsonProcessingException {
-    logger.info(input);
-    if (requestQueue.isEmpty()) {
-      if (input.isEmpty()) {
-        sendMessage("room created failed: name is empty");
-        menuStage = MenuStage.ROOM_MENU;
-        commandExecutor.execute("roomMenu");
-        return;
-      }
-      if (roomRepository.findAll().stream()
-          .anyMatch(room -> input.equals(room.getName()))) {
-        sendMessage("this room already exist");
-        menuStage = MenuStage.ROOM_MENU;
-        commandExecutor.execute("roomMenu");
-        return;
-      }
 
-      roomRepository.save(new Room(null, input, user));
-      sendMessage("room created");
-      menuStage = MenuStage.ROOM_MENU;
-      commandExecutor.execute("roomMenu");
-      return;
+    switch (stage) {
+      case 0 -> {
+        commandExecutor.execute("roomNameRequest");
+        stage++;
+        menuStage = MenuStage.CREATE_ROOM;
+      }
+      case 1 -> {
+        if (input.isEmpty()) {
+          sendMessage("room created failed: name is empty");
+          menuStage = MenuStage.ROOM_MENU;
+          commandExecutor.execute("roomMenu");
+          stage = 0;
+          return;
+        }
+        if (roomRepository.findAll().stream()
+            .anyMatch(room -> input.equals(room.getName()))) {
+          sendMessage("this room already exist");
+          menuStage = MenuStage.ROOM_MENU;
+          commandExecutor.execute("roomMenu");
+          stage = 0;
+          return;
+        }
+
+        roomRepository.save(new Room(null, input, user));
+        sendMessage("room created");
+        menuStage = MenuStage.ROOM_MENU;
+        commandExecutor.execute("roomMenu");
+        stage = 0;
+      }
     }
-    Objects.requireNonNull(requestQueue.poll()).execute();
-    menuStage = MenuStage.CREATE_ROOM;
-
   }
 
   public void chooseRoom(String input) throws JsonProcessingException {
@@ -273,13 +268,15 @@ public class ApplicationChatMenu {
         .forEach(message -> {
           try {
             logger.info(message.toString());
-            sendMessage(String.format("[%s]: %s", message.getUser().getName(), message.getMessage()));
+            sendMessage(
+                String.format("[%s]: %s", message.getUser().getName(), message.getMessage()));
           } catch (JsonProcessingException e) {
             logger.warn(e.getMessage());
             throw new RuntimeException(e);
           }
         });
   }
+
   public void exit() throws JsonProcessingException {
     logger.info("EXIT {} ", channel.remoteAddress());
     sendMessage("exit");

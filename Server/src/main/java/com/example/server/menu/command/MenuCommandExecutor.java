@@ -35,6 +35,7 @@ public class MenuCommandExecutor {
   {
     this.register("menu", this::menu);
     this.register("roomMenu", this::roomMenu);
+    this.register("roomNameRequest", this::roomNameRequest);
   }
 
 
