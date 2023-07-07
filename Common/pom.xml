@@ -20,5 +20,11 @@
 
   <dependencies>
 
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
+      <version>6.0.9</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 </project>

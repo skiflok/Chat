@@ -1,4 +1,4 @@
-package com.example.message;
+package com.example.model.message;
 
 /**
  * - Когда новый клиент хочет подсоединиться к серверу, сервер должен запросить имя
