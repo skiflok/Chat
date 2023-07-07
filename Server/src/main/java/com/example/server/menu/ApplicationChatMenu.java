@@ -1,7 +1,7 @@
 package com.example.server.menu;
 
 import static com.example.model.message.MessageType.*;
-
+import com.example.model.message.MessageType;
 import com.example.repositories.messageRepositories.MessageRepository;
 import com.example.server.connection.ActiveConnectionStorage;
 import com.example.model.message.Message;
@@ -11,7 +11,6 @@ import com.example.repositories.roomRepositories.RoomRepository;
 import com.example.repositories.userRepositories.UserRepository;
 import com.example.server.connection.Connection;
 import com.example.server.menu.command.Command;
-import com.example.server.menu.command.MenuCommandExecutor;
 import com.example.services.UsersService;
 import com.example.utils.json.util.JsonUtil;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -20,7 +19,6 @@ import io.netty.channel.ChannelHandlerContext;
 import java.time.LocalDateTime;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Queue;
 import java.util.stream.Collectors;
@@ -49,8 +47,6 @@ public class ApplicationChatMenu {
   @Autowired
   private JsonUtil<Message> jsonUtil;
 
-  private MenuCommandExecutor commandExecutor;
-
   private MenuStage menuStage = MenuStage.MENU;
   private Channel channel;
   private ChannelHandlerContext ctx;
@@ -64,12 +60,12 @@ public class ApplicationChatMenu {
   Queue<Command> requestQueue = new LinkedList<>();
   Queue<String> answerQueue = new LinkedList<>();
 
-  public void init(ChannelHandlerContext ctx, User user) throws JsonProcessingException {
+  public void init(ChannelHandlerContext ctx, User user)
+      throws JsonProcessingException {
     this.ctx = ctx;
     this.user = user;
     this.channel = ctx.channel();
-    commandExecutor = new MenuCommandExecutor(channel, jsonUtil);
-    commandExecutor.execute("menu");
+    menu();
   }
 
   public void messageHandler(String incomeMsg) throws JsonProcessingException {
@@ -86,8 +82,123 @@ public class ApplicationChatMenu {
       case CREATE_ROOM -> createRoom(msg.getMessage());
       case CHOOSE_ROOM -> chooseRoom(msg.getMessage());
       case CHAT -> processChat(msg.getMessage());
+      default -> logger.error("Некорректный статус меню: {}", menuStage);
+    }
+  }
+
+  private void processRoomMenuInput(String input) throws JsonProcessingException {
+    logger.info("");
+    switch (input) {
+      case "1" -> createRoom(input);
+      case "2" -> chooseRoom(input);
+      case "3" -> exit();
       default -> {
-        logger.error("Некорректный статус меню: {}", menuStage);
+        logger.info("Некорректный ввод. Попробуйте снова.");
+        roomMenu();
+      }
+    }
+  }
+
+  private void processMenuInput(String input) throws JsonProcessingException {
+    logger.info("");
+    switch (input) {
+      case "1" -> authentication(input);
+      case "2" -> registration(input);
+      case "3" -> exit();
+      default -> {
+        logger.info("Некорректный ввод. Попробуйте снова.");
+        menu();
+      }
+    }
+  }
+
+  public void registration(String input) throws JsonProcessingException {
+
+    logger.info("stage {}", stage);
+    switch (stage) {
+      case 0 -> {
+        menuStage = MenuStage.REGISTRATION;
+        userNameRequest();
+        stage++;
+      }
+      case 1 -> {
+        answerQueue.offer(input);
+        logger.info(answerQueue.toString());
+        passwordRequest();
+        stage++;
+      }
+      case 2 -> {
+        stage = 0;
+        answerQueue.offer(input);
+        logger.info(answerQueue.toString());
+        String userName = answerQueue.poll();
+        String userPassword = answerQueue.poll();
+        if ("".equals(userName) || "".equals(userPassword)) {
+          logger.info("null or empty");
+          menuStage = MenuStage.MENU;
+          menu();
+          return;
+        }
+        Optional<User> optionalUserFromDB = userRepository.findByName(userName);
+
+        if (optionalUserFromDB.isPresent()) {
+          userAlreadyRegister();
+        } else {
+          usersService.signUp(new User(null, userName, userPassword));
+          registrationSuccess();
+        }
+        menuStage = MenuStage.MENU;
+        menu();
+      }
+      default -> {
+        stage = 0;
+        menuStage = MenuStage.MENU;
+      }
+    }
+  }
+
+  private void authentication(String input) throws JsonProcessingException {
+
+    logger.info("stage {}", stage);
+    switch (stage) {
+      case 0 -> {
+        menuStage = MenuStage.AUTHENTICATION;
+        userNameRequest();
+        stage++;
+      }
+      case 1 -> {
+        answerQueue.offer(input);
+        logger.info(answerQueue.toString());
+        passwordRequest();
+        stage++;
+      }
+      case 2 -> {
+        answerQueue.offer(input);
+        logger.info(answerQueue.toString());
+        String userName = answerQueue.poll();
+        String userPassword = answerQueue.poll();
+        stage = 0;
+        if ("".equals(userName) || "".equals(userPassword)) {
+          logger.info("null or empty");
+          menuStage = MenuStage.MENU;
+          menu();
+          return;
+        }
+        Optional<User> optionalUserFromDB = userRepository.findByName(userName);
+        if (optionalUserFromDB.isPresent()) {
+          this.user = optionalUserFromDB.get();
+          menuStage = MenuStage.ROOM_MENU;
+          sendMessage("authentication success! Hello " + user.getName());
+          roomMenu();
+        } else {
+          userNotRegister();
+          menuStage = MenuStage.MENU;
+          menu();
+        }
+      }
+      default -> {
+        menuStage = MenuStage.MENU;
+        stage = 0;
       }
     }
   }
@@ -100,97 +211,20 @@ public class ApplicationChatMenu {
     sendBroadcastMessage(input);
   }
 
-  private void processMenuInput(String input) throws JsonProcessingException {
-    logger.info("");
-    switch (input) {
-      case "1":
-        menuStage = MenuStage.AUTHENTICATION;
-        if (requestQueue.isEmpty()) {
-          logger.info("requestQueue offer");
-          requestQueue.offer(commandExecutor::userNameRequest);
-          requestQueue.offer(commandExecutor::passwordRequest);
-        }
-        authentication(input);
-        break;
-      case "2":
-        menuStage = MenuStage.REGISTRATION;
-        if (requestQueue.isEmpty()) {
-          logger.info("requestQueue offer");
-          requestQueue.offer(commandExecutor::userNameRequest);
-          requestQueue.offer(commandExecutor::passwordRequest);
-        }
-        registration(input);
-        break;
-      case "3":
-        menuStage = MenuStage.EXIT;
-        exit();
-      case "0":
-        return;
-      default:
-        logger.info("Некорректный ввод. Попробуйте снова.");
-        commandExecutor.execute("menu");
-    }
-  }
-
-  private void processRoomMenuInput(String input) throws JsonProcessingException {
-    logger.info("");
-    switch (input) {
-      case "1" -> createRoom(input);
-      case "2" -> chooseRoom(input);
-      case "3" -> exit();
-      default -> {
-        logger.info("Некорректный ввод. Попробуйте снова.");
-        commandExecutor.execute("roomMenu");
-      }
-    }
-  }
-
-  public void registration(String input) throws JsonProcessingException {
-    logger.info("");
-    if (requestQueue.size() < 2) {
-      answerQueue.offer(input);
-    }
-    if (!requestQueue.isEmpty()) {
-      requestQueue.poll().execute();
-    }
-    if (answerQueue.size() == 2) {
-      logger.info(answerQueue.toString());
-      String userName = answerQueue.poll();
-      String userPassword = answerQueue.poll();
-      if ("".equals(userName) || "".equals(userPassword)) {
-        logger.info("null or empty");
-        menuStage = MenuStage.MENU;
-        commandExecutor.execute("menu");
-        return;
-      }
-      Optional<User> optionalUserFromDB = userRepository.findByName(userName);
-
-      if (optionalUserFromDB.isPresent()) {
-        userAlreadyRegister();
-      } else {
-//        userRepository.save(new User(null, userName, userPassword));
-        usersService.signUp(new User(null, userName, userPassword));
-        registrationSuccess();
-      }
-      menuStage = MenuStage.MENU;
-      commandExecutor.execute("menu");
-    }
-  }
-
-  public void userAlreadyRegister() throws JsonProcessingException {
+  private void userAlreadyRegister() throws JsonProcessingException {
     channel.writeAndFlush(
         jsonUtil.objectToString(new Message(TEXT, "user Already Register")));
   }
 
-  public void registrationSuccess() throws JsonProcessingException {
+  private void registrationSuccess() throws JsonProcessingException {
     sendMessage("Registration success");
   }
 
-  public void createRoom(String input) throws JsonProcessingException {
+  private void createRoom(String input) throws JsonProcessingException {
 
     switch (stage) {
       case 0 -> {
-        commandExecutor.execute("roomNameRequest");
+        roomNameRequest();
         stage++;
         menuStage = MenuStage.CREATE_ROOM;
       }
@@ -198,7 +232,7 @@ public class ApplicationChatMenu {
         if (input.isEmpty()) {
           sendMessage("room created failed: name is empty");
           menuStage = MenuStage.ROOM_MENU;
-          commandExecutor.execute("roomMenu");
+          roomMenu();
           stage = 0;
           return;
         }
@@ -206,7 +240,7 @@ public class ApplicationChatMenu {
             .anyMatch(room -> input.equals(room.getName()))) {
           sendMessage("this room already exist");
           menuStage = MenuStage.ROOM_MENU;
-          commandExecutor.execute("roomMenu");
+          roomMenu();
           stage = 0;
           return;
         }
@@ -214,13 +248,13 @@ public class ApplicationChatMenu {
         roomRepository.save(new Room(null, input, user));
         sendMessage("room created");
         menuStage = MenuStage.ROOM_MENU;
-        commandExecutor.execute("roomMenu");
+        roomMenu();
         stage = 0;
       }
     }
   }
 
-  public void chooseRoom(String input) throws JsonProcessingException {
+  private void chooseRoom(String input) throws JsonProcessingException {
 
     switch (stage) {
 
@@ -255,21 +289,21 @@ public class ApplicationChatMenu {
         stage = 0;
       }
       default -> {
-        commandExecutor.execute("roomMenu");
+        roomMenu();
         menuStage = MenuStage.ROOM_MENU;
       }
     }
     // todo проверки
   }
 
-  public void sendLast30MsgFromRoom() {
+  private void sendLast30MsgFromRoom() {
     logger.info("sendLast30MsgFromRoom | room id = {}", room.getId());
     messageRepository.findLast30(room.getId())
         .forEach(message -> {
           try {
             logger.info(message.toString());
             sendMessage(
-                String.format("[%s]: %s", message.getUser().getName(), message.getMessage()));
+                (String.format("[%s]: %s", message.getUser().getName(), message.getMessage())));
           } catch (JsonProcessingException e) {
             logger.warn(e.getMessage());
             throw new RuntimeException(e);
@@ -277,58 +311,21 @@ public class ApplicationChatMenu {
         });
   }
 
-  public void exit() throws JsonProcessingException {
+  private void exit() throws JsonProcessingException {
     logger.info("EXIT {} ", channel.remoteAddress());
     sendMessage("exit");
     ctx.disconnect();
     ctx.close();
   }
 
-  private void authentication(String input) throws JsonProcessingException {
-    logger.info("");
-    if (requestQueue.size() < 2) {
-      answerQueue.offer(input);
-    }
-    if (!requestQueue.isEmpty()) {
-      requestQueue.poll().execute();
-    }
-    if (answerQueue.size() == 2) {
-      logger.info(answerQueue.toString());
-      String userName = answerQueue.poll();
-      String userPassword = answerQueue.poll();
-      if ("".equals(userName) || "".equals(userPassword)) {
-        logger.info("null or empty");
-        menuStage = MenuStage.MENU;
-        commandExecutor.execute("menu");
-        return;
-      }
 
-      Optional<User> optionalUserFromDB = userRepository.findByName(userName);
-      if (optionalUserFromDB.isPresent()) {
-        this.user = optionalUserFromDB.get();
-        menuStage = MenuStage.ROOM_MENU;
-        sendMessage("authentication success! Hello " + user.getName());
-        commandExecutor.execute("roomMenu");
-      } else {
-        userNotRegister();
-        menuStage = MenuStage.MENU;
-        commandExecutor.execute("menu");
-      }
-    }
-  }
-
-  public void userNotRegister() throws JsonProcessingException {
+  private void userNotRegister() throws JsonProcessingException {
     channel.writeAndFlush(
         jsonUtil.objectToString(new Message(TEXT, "User not register")));
     logger.info("User not register");
   }
 
-  public void sendMessage(String msgString) throws JsonProcessingException {
-    channel.writeAndFlush(
-        jsonUtil.objectToString(new Message(TEXT, msgString)));
-  }
-
-  public void sendBroadcastMessage(String income) throws JsonProcessingException {
+  private void sendBroadcastMessage(String income) throws JsonProcessingException {
     messageRepository.save(new Message(null, user, room, income, LocalDateTime.now()));
     for (Connection connection : activeConnectionStorage.getConnectionList()) {
       if (this.room.getName().equals(connection.getRoomName())) {
@@ -337,4 +334,45 @@ public class ApplicationChatMenu {
       }
     }
   }
+
+  private void userNameRequest() throws JsonProcessingException {
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "Enter username")));
+  }
+
+  private void passwordRequest() throws JsonProcessingException {
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT, "Enter password")));
+  }
+
+  private void roomNameRequest() throws JsonProcessingException {
+    channel.writeAndFlush(
+        jsonUtil.objectToString(new Message(MessageType.TEXT, "Enter room name")));
+  }
+
+  private void sendMessage(String msgString) throws JsonProcessingException {
+    channel.writeAndFlush(
+        jsonUtil.objectToString(new Message(TEXT, msgString)));
+  }
+
+  private void menu() throws JsonProcessingException {
+    logger.info("");
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(
+        MessageType.TEXT,
+        """
+            Main menu commands:
+            1. signIn
+            2. signUp
+            3. exit""")));
+  }
+
+  private void roomMenu() throws JsonProcessingException {
+    logger.info("");
+    channel.writeAndFlush(jsonUtil.objectToString(new Message(MessageType.TEXT,
+        """
+            Room menu
+             1. Create room
+             2. Choose room
+             3. Exit""")));
+  }
+
+
 }
