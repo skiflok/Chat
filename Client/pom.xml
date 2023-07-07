@@ -36,7 +36,7 @@
         <configuration>
           <archive>
             <manifest>
-              <mainClass>com.example.Client</mainClass>
+              <mainClass>com.example.client.app.ClientApp</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>

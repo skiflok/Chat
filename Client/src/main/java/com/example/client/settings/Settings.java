@@ -1,5 +1,4 @@
-package com.example.utils;
-
+package com.example.client.settings;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,19 +7,12 @@ import org.springframework.stereotype.Component;
 
 @Component
 @PropertySource("classpath:application.properties")
-@PropertySource("classpath:db.properties")
 @Getter
-public class ApplicationSettings {
+public class Settings {
 
   @Value("${server.port}")
   private int PORT;
   @Value("${server.host}")
   private String HOST;
-
-
-  @Value("${db.init.schema.path}")
-  String schemaPath;
-  @Value("${db.init.data.path}")
-  String dataPath;
 
 }

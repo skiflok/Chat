@@ -1,7 +1,8 @@
-package com.example;
+package com.example.client;
 
-import com.example.handlers.ClientHandler;
-import com.example.utils.PropertiesLoader;
+
+import com.example.client.settings.Settings;
+import com.example.client.handlers.ClientHandler;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -15,32 +16,21 @@ import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.codec.string.StringEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+
+@Component
 public class Client {
-
   private static final Logger logger = LoggerFactory.getLogger(Client.class);
-  private final String HOST;
-  private final int PORT;
+
+  @Autowired
+  private Settings settings;
 
   private Channel channel;
 
   public void setChannel(Channel channel) {
     this.channel = channel;
-  }
-
-  private final PropertiesLoader propertiesLoader = PropertiesLoader.getPropertiesLoader();
-
-  {
-    PORT = Integer.parseInt(propertiesLoader.getProperty("server.port"));
-    HOST = propertiesLoader.getProperty("server.host");
-  }
-
-  public String getHOST() {
-    return HOST;
-  }
-
-  public int getPORT() {
-    return PORT;
   }
 
   public void run() {
@@ -65,10 +55,10 @@ public class Client {
       });
 
       // Start the client.
-      ChannelFuture f = b.connect(HOST, PORT).sync(); // (5)
+      ChannelFuture f = b.connect(settings.getHOST(), settings.getPORT()).sync(); // (5)
       setChannel(f.channel());
 
-      logger.info("Клиент успешно запущен. HOST = {}, PORT = {}", this.getHOST(), this.getPORT());
+      logger.info("Клиент успешно запущен. HOST = {}, PORT = {}", settings.getHOST(), settings.getPORT());
 
       f.channel().closeFuture().sync();
     } catch (InterruptedException e) {
@@ -76,15 +66,5 @@ public class Client {
     } finally {
       workerGroup.shutdownGracefully();
     }
-
-
   }
-
-  public static void main(String[] args) {
-
-    Client client = new Client();
-    client.run();
-
-  }
-
 }

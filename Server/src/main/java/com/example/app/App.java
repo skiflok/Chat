@@ -9,9 +9,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 public class App {
 
-  // TODO авторизация
-  // TODO BD
-
   private static final Logger logger = LoggerFactory.getLogger(App.class);
 
   public static void main(String[] args) {
